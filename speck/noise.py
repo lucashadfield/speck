@@ -1,6 +1,7 @@
 __all__ = ['RandomNoise', 'SineNoise']
 
 import numpy as np
+from typing import List, Tuple
 
 
 class Noise:
@@ -12,10 +13,10 @@ class Noise:
 
         self.profile = profile
 
-    def _generate(self, n: int):
+    def _generate(self, n: int) -> np.ndarray:
         raise NotImplementedError
 
-    def __call__(self, m: int, n: int) -> list:
+    def __call__(self, m: int, n: int) -> List[Tuple]:
         # m = number of rows (lines)
         # n = number of points per line
 
@@ -48,7 +49,7 @@ class RandomNoise(Noise):
 
         super().__init__(profile)
 
-    def _generate(self, n):
+    def _generate(self, n: int) -> np.ndarray:
         res = np.array([0.0])
         for _ in range(n):
             r = np.random.normal(-res.sum() * self.pull, self.scale)
@@ -75,7 +76,7 @@ class SineNoise(Noise):
 
         super().__init__(profile)
 
-    def _generate(self, n):
+    def _generate(self, n: int) -> np.ndarray:
         return np.array(
             [
                 np.sin(np.linspace(0, self.base_freq, n) * r) * self.scale

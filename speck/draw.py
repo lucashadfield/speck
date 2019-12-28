@@ -4,11 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from itertools import cycle
-from typing import Union, Iterable, Generator
+from typing import Union, Iterable, Optional, List, Tuple
 import logging
 
 from speck.noise import Noise
 from speck.colour import Colour
+from speck.modifier import Modifier
 
 logger = logging.getLogger('speck')
 
@@ -27,20 +28,21 @@ class Streaks:
 
     @classmethod
     def from_path(cls, path: str):
-        return cls(Image.open(path).convert('L'))
+        return cls(Image.open(path))
 
-    @property
-    def x(self):
-        return np.linspace(0, self.w, self.w * self.inter)
+    @staticmethod
+    def _repeat_head_tail(arr: np.ndarray, n: int) -> np.ndarray:
+        return np.insert(
+            np.insert(arr, 0, np.ones(n) * arr[0]), -1, np.ones(n) * arr[-1]
+        )
 
-    @property
-    def y(self):
-        if self.y_noise is not None:
-            return [
-                (y[0] + yn[0], y[1] + yn[1]) for y, yn in zip(self._y, self.y_noise)
-            ]
-        else:
-            return self._y
+    @staticmethod
+    def _zip_cycle(a, b) -> zip:
+        if isinstance(b, str):
+            b = [b]
+        elif len(b) > len(a):
+            b = b[: len(a)]
+        return zip(a, cycle(b))
 
     def _set_param(self, param: str, value) -> bool:
         if getattr(self, param) == value:
@@ -48,7 +50,16 @@ class Streaks:
         setattr(self, param, value)
         return True
 
-    def _create_fig(self, short_edge):
+    @property
+    def y(self) -> List[Tuple[np.ndarray, np.ndarray]]:
+        if self.y_noise is not None:
+            return [
+                (y[0] + yn[0], y[1] + yn[1]) for y, yn in zip(self._y, self.y_noise)
+            ]
+        else:
+            return self._y
+
+    def _create_fig(self, short_edge) -> None:
         scale = short_edge / min((self.w, self.h))
         self.fig, self.ax = plt.subplots(figsize=[x * scale for x in (self.w, self.h)])
         self.ax.invert_yaxis()
@@ -59,13 +70,9 @@ class Streaks:
         self.ax.set_xticks([])
         self.ax.set_yticks([])
 
-    @staticmethod
-    def _repeat_head_tail(arr, n):
-        return np.insert(
-            np.insert(arr, 0, np.ones(n) * arr[0]), -1, np.ones(n) * arr[-1]
-        )
+    def _set_x_y(self) -> None:
+        self.x = np.linspace(0, self.w, self.w * self.inter)
 
-    def _set_data(self):
         y_min = self.y_range[0] / 2 + 0.5
         y_max = self.y_range[1] / 2 + 0.5
 
@@ -83,73 +90,68 @@ class Streaks:
             L = self._repeat_head_tail(L, self.inter // 2)
             x0 = self._repeat_head_tail(x0, self.inter // 2)
 
-            y_top = i + (L / (1 + np.exp(-self.k * (self.x - x0)))) + y_offset
-            y_bot = 2 * i + 1 - y_top
+            y_top: np.ndarray = i + (
+                L / (1 + np.exp(-self.k * (self.x - x0)))
+            ) + y_offset
+            y_bot: np.ndarray = 2 * i + 1 - y_top
 
             self._y.append((y_top, y_bot))
 
-        self._apply_noise()
-
-    def _apply_noise(self):
+    def _apply_noise(self) -> None:
         if self.noise is not None:
             self.y_noise = self.noise(self.h, self.w * self.inter)
         else:
             self.y_noise = None
 
-        self._apply_colour()
-
-    @staticmethod
-    def cycle_to_n(it: Iterable, n: int) -> Generator:
-        if isinstance(it, str):
-            it = [it]
-        return (i for i, _ in zip(cycle(it), range(n)))
-
-    def _apply_colour(self):
+    def _apply_colour(self) -> None:
         if isinstance(self.colour, (str, Iterable)):
-            self.y_colour = self.cycle_to_n(self.colour, self.h)
+            self.y_colour = self.colour
         else:
-            self.y_colour = self.cycle_to_n(self.colour(self.h), self.h)
+            self.y_colour = self.colour(self.h)
+
+    def _plot(self, short_edge, modifier) -> None:
+        self._create_fig(short_edge)
+
+        for (y_top, y_bot), c in self._zip_cycle(self.y, self.y_colour):
+            x = self.x
+            if modifier is not None:
+                x, y_top, y_bot = modifier(x, y_top, y_bot)
+
+            self.ax.fill_between(x, y_top, y_bot, color=c, lw=0)
 
     def draw(
         self,
         y_range: tuple = (0, 1),
-        noise: Noise = None,
+        noise: Optional[Noise] = None,
         colour: Union[str, Iterable, Colour] = 'black',
         k: int = 10,
         inter: int = 100,
         short_edge: float = 10.0,
-        seed=None,
-    ):
+        modifier: Optional[Modifier] = None,
+        seed: Optional[int] = None,
+    ) -> None:
         if seed is not None:
             np.random.seed(seed)
 
-        # set where to start cascading updates from based on which parameters changed
-        # "lower" starting points for the function cascade are set earlier
-        cascade_func = None
-
-        # if colour param changed (independent of changes in noise and data)
-        if self._set_param('colour', colour):
-            cascade_func = self._apply_colour
-
-        # if noise param changed (independent of changes in data)
+        update_funcs = TaskList()
+        if self._set_param('inter', inter):
+            update_funcs.append([self._set_x_y, self._apply_noise])
+        if self._set_param('k', k) | self._set_param('y_range', y_range):
+            update_funcs.append([self._set_x_y])
         if self._set_param('noise', noise):
-            cascade_func = self._apply_noise
+            update_funcs.append([self._apply_noise])
+        if self._set_param('colour', colour):
+            update_funcs.append([self._apply_colour])
 
-        # if data params changed
-        if (
-            self._set_param('k', k)
-            | self._set_param('inter', inter)
-            | self._set_param('y_range', y_range)
-        ):
-            cascade_func = self._set_data
-
-        # run cascade
-        if cascade_func is not None:
-            logger.info(f'Cascading from {cascade_func.__name__}')
-            cascade_func()
+        for func in update_funcs:
+            func()
 
         # plot data
-        self._create_fig(short_edge)
+        self._plot(short_edge, modifier)
 
-        for y, c in zip(self.y, self.y_colour):
-            self.ax.fill_between(self.x, *y, color=c, lw=0)
+
+class TaskList(list):
+    def append(self, items: list) -> None:
+        for i in items:
+            if i not in self:
+                super().append(i)
