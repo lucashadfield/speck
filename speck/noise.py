@@ -38,8 +38,8 @@ class Noise:
 class RandomNoise(Noise):
     def __init__(
         self,
-        profile: str = 'parralel',
-        scale: float = 0.1,
+        profile: str = 'parallel',
+        scale: float = 0.5,
         pull: float = 0.1,
         mean_n: int = 100,
     ):
@@ -65,21 +65,29 @@ class SineNoise(Noise):
         self,
         profile: str = 'parallel',
         scale: float = 0.5,
-        wave_count: int = 4,
-        base_freq: int = 10,
-        freq_factor: tuple = (1, 5),
+        wave_count: int = 3,
+        base_freq: int = 3,
+        freq_factor: tuple = (1, 3),
+        offset_range: tuple = (0, 2 * np.pi),
     ):
         self.scale = scale
         self.wave_count = wave_count
         self.base_freq = base_freq
         self.freq_factor = freq_factor
+        self.offset_range = offset_range
 
         super().__init__(profile)
 
     def _generate(self, n: int) -> np.ndarray:
         return np.array(
             [
-                np.sin(np.linspace(0, self.base_freq, n) * r) * self.scale
-                for r in np.random.uniform(*self.freq_factor, self.wave_count)
+                self.scale
+                * np.sin(
+                    np.linspace(0, self.base_freq * 2 * np.pi, n) * factor + offset
+                )
+                for factor, offset in zip(
+                    np.random.uniform(*self.freq_factor, self.wave_count),
+                    np.random.uniform(*self.offset_range, self.wave_count),
+                )
             ]
         ).prod(axis=0)
