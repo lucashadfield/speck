@@ -61,14 +61,8 @@ class SpeckWidget:
 
         colour = GradientColour([colour_top, colour_bot])
 
-        self.speck_plot.draw(
-            y_range=y_range,
-            noise=noise,
-            colour=colour,
-            k=10,
-            inter=100,
-            short_edge=10,
-            seed=1,
+        return self.speck_plot.draw(
+            y_range=y_range, noise=noise, colour=colour, seed=1,
         )
 
     def interact(self):
