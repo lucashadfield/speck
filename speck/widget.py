@@ -10,7 +10,7 @@ class SpeckWidget:
     )
     noise_profile_W = ipywidgets.Dropdown(
         value='parallel',
-        options=['parallel', 'reflective', 'independent'],
+        options=['parallel', 'reflect', 'independent'],
         description='Noise Profile',
     )
     noise_scale_W = ipywidgets.FloatSlider(

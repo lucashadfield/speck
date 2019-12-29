@@ -51,16 +51,17 @@ class SpeckPlot:
         if method is not None:
             getattr(self, method).cache_clear()
         else:
+            self.x.cache_clear()
             self.y.cache_clear()
             self.noise.cache_clear()
             self.colour.cache_clear()
 
-    @property
+    @lru_cache()
     def x(self) -> np.ndarray:
         return np.linspace(0, self.w, self.w * self.inter)
 
     @lru_cache()
-    def y(self, y_range) -> List[Tuple[np.ndarray, np.ndarray]]:
+    def y(self, y_range: Tuple[float, float]) -> List[Tuple[np.ndarray, np.ndarray]]:
         y_min = y_range[0] / 2 + 0.5
         y_max = y_range[1] / 2 + 0.5
 
@@ -84,7 +85,7 @@ class SpeckPlot:
             x0 = repeat_head_tail(x0, self.inter // 2)
 
             y_top: np.ndarray = i + (
-                L / (1 + np.exp(-self.k * (self.x - x0)))
+                L / (1 + np.exp(-self.k * (self.x() - x0)))
             ) + y_offset
             y_bot: np.ndarray = 2 * i + 1 - y_top
 
@@ -117,24 +118,25 @@ class SpeckPlot:
         y_range: Tuple[float, float] = (0, 1),
         noise: Optional[Noise] = None,
         colour: Union[str, Iterable, Colour] = 'black',
-        modifier: Optional[Modifier] = None,
+        modifiers: Optional[Iterable[Modifier]] = None,
         seed: Optional[int] = None,
     ) -> figure:
         if seed is not None:
             np.random.seed(seed)
 
-        x = self.x
+        x = self.x()
         y = self.y(y_range)
         n = self.noise(noise)
         c = self.colour(colour)
+
+        if modifiers is not None:
+            for m in modifiers:
+                x, y, n, c = m(x, y, n, c)
 
         self._clear_ax()
         for y_, n_, c_ in zip(y, cycle(n), cycle(c)):
             y_top = y_[0] + n_[0]
             y_bot = y_[1] + n_[1]
-
-            if modifier is not None:
-                x, y_top, y_bot = modifier(x, y_top, y_bot)
 
             self.ax.fill_between(x, y_top, y_bot, color=c_, lw=0)
 

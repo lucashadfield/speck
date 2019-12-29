@@ -6,9 +6,9 @@ from typing import List, Tuple
 
 class Noise:
     def __init__(self, profile: str, *args, **kwargs):
-        if profile not in ['parallel', 'reflective', 'independent']:
+        if profile not in ['parallel', 'reflect', 'independent']:
             raise ValueError(
-                'Invalid noise profile. Supported profiles are: parallel, reflective, independent'
+                'Invalid noise profile. Supported profiles are: parallel, reflect, independent'
             )
 
         self.profile = profile
@@ -26,7 +26,7 @@ class Noise:
 
         if self.profile == 'parallel':
             return [(yn, yn) for yn in noise_a]
-        if self.profile == 'reflective':
+        if self.profile == 'reflect':
             return [(yn, -yn) for yn in noise_a]
         if self.profile == 'independent':
             noise_b = []

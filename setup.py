@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='speck',
-    version='0.2.0',
+    version='0.2.1',
     author='Lucas Hadfield',
     packages=find_packages(),
     install_requires=['numpy', 'matplotlib', 'pillow', 'opencv-python', 'ipywidgets'],
