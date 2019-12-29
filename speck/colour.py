@@ -31,12 +31,12 @@ class KMeansColour(Colour):
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, 0.1)
     flags = cv2.KMEANS_RANDOM_CENTERS
 
-    def __init__(self, streaks, k: int = 5):
-        if streaks.image.mode != 'RGB':
+    def __init__(self, speck_plot, k: int = 5):
+        if speck_plot.image.mode != 'RGB':
             raise AssertionError('KMeansColour requires RGB image mode')
 
         self.k = k
-        self.im = np.array(streaks.image)
+        self.im = np.array(speck_plot.image)
 
     def _kmeans_colour(self, row: np.ndarray) -> Tuple:
         _, labels, palette = cv2.kmeans(
@@ -53,8 +53,8 @@ class KMeansColour(Colour):
 
 
 class GreyscaleMeanColour(Colour):
-    def __init__(self, streaks):
-        self.im = streaks.im
+    def __init__(self, speck_plot):
+        self.im = speck_plot.im
 
     def __call__(self, m: int) -> Iterable[Tuple]:
         return [(c, c, c) for c in np.array(self.im).mean(1) / 255.0]

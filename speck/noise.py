@@ -66,8 +66,8 @@ class SineNoise(Noise):
         profile: str = 'parallel',
         scale: float = 0.5,
         wave_count: int = 3,
-        base_freq: int = 3,
-        freq_factor: tuple = (1, 3),
+        base_freq: float = 3.0,
+        freq_factor: tuple = (1.0, 3.0),
         offset_range: tuple = (0, 2 * np.pi),
     ):
         self.scale = scale

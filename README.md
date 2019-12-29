@@ -7,11 +7,11 @@
 ## Example:
 
 ```python
-from speck.draw import Streaks
+from speck.draw import SpeckPlot
 from speck.noise import SineNoise
 from speck.colour import CmapColour
 
-s = Streaks.from_path(path_str)
+s = SpeckPlot.from_path(path_str)
 
 s.draw(
     noise=SineNoise(scale=0.7, profile='parallel'),

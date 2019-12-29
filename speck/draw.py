@@ -1,4 +1,4 @@
-__all__ = ['Streaks']
+__all__ = ['SpeckPlot']
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ from speck.modifier import Modifier
 logger = logging.getLogger('speck')
 
 
-class Streaks:
+class SpeckPlot:
     def __init__(self, image: Image):
         self.image = image
         self.im = np.array(image.convert('L'))
@@ -52,9 +52,9 @@ class Streaks:
 
     @property
     def y(self) -> List[Tuple[np.ndarray, np.ndarray]]:
-        if self.y_noise is not None:
+        if self._y_noise is not None:
             return [
-                (y[0] + yn[0], y[1] + yn[1]) for y, yn in zip(self._y, self.y_noise)
+                (y[0] + yn[0], y[1] + yn[1]) for y, yn in zip(self._y, self._y_noise)
             ]
         else:
             return self._y
@@ -99,9 +99,9 @@ class Streaks:
 
     def _apply_noise(self) -> None:
         if self.noise is not None:
-            self.y_noise = self.noise(self.h, self.w * self.inter)
+            self._y_noise = self.noise(self.h, self.w * self.inter)
         else:
-            self.y_noise = None
+            self._y_noise = None
 
     def _apply_colour(self) -> None:
         if isinstance(self.colour, (str, Iterable)):
