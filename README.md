@@ -5,6 +5,12 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 
+Render images as a set of continuous lines representing each horizontal row of pixels:
+- Line width varies with greyscale pixel darkness.
+- Set line width range. Lower range effectively reduces contrast
+- Add noise profiles to introduce randomness
+- Add colour profiles to vary line colours
+
 ## Example:
 
 ```python
