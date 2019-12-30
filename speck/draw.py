@@ -20,7 +20,7 @@ class SpeckPlot:
     k = 10
     inter = 100
 
-    def __init__(self, image: Image, fig_short_edge=10):
+    def __init__(self, image: Image, fig_short_edge: float = 10):
         self.image = image
         self.fig_short_edge = fig_short_edge
         self.im = np.array(image.convert('L'))
@@ -34,11 +34,12 @@ class SpeckPlot:
         plt.close(self.fig)
 
     @classmethod
-    def from_path(cls, path: str):
-        return cls(Image.open(path))
+    def from_path(cls, path: str, fig_short_edge: float = 10):
+        return cls(Image.open(path), fig_short_edge)
 
-    def _clear_ax(self) -> None:
+    def _clear_ax(self, background) -> None:
         self.ax.clear()
+        self.ax.set_facecolor(background)
         self.ax.invert_yaxis()
         self.ax.spines['left'].set_visible(False)
         self.ax.spines['right'].set_visible(False)
@@ -119,6 +120,7 @@ class SpeckPlot:
         noise: Optional[Noise] = None,
         colour: Union[str, Iterable, Colour] = 'black',
         modifiers: Optional[Iterable[Modifier]] = None,
+        background: Union[str, Tuple] = 'white',
         seed: Optional[int] = None,
     ) -> figure:
         if seed is not None:
@@ -133,7 +135,7 @@ class SpeckPlot:
             for m in modifiers:
                 x, y, n, c = m(x, y, n, c)
 
-        self._clear_ax()
+        self._clear_ax(background)
         for y_, n_, c_ in zip(y, cycle(n), cycle(c)):
             y_top = y_[0] + n_[0]
             y_bot = y_[1] + n_[1]
