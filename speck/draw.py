@@ -16,6 +16,12 @@ from speck.modifier import Modifier
 logger = logging.getLogger('speck')
 
 
+XData = np.ndarray
+YData = List[Tuple[np.ndarray, np.ndarray]]
+NoiseData = List[Tuple[Union[np.ndarray, int], Union[np.ndarray, int]]]
+ColourData = Union[Iterable, Iterable[Tuple]]
+
+
 class SpeckPlot:
     k = 10
     inter = 100
@@ -57,7 +63,7 @@ class SpeckPlot:
     def __repr__(self):
         return f'{self.__class__.__name__}({self.image}, {self.fig_short_edge})'
 
-    def _clear_ax(self, background) -> None:
+    def _clear_ax(self, background: Union[str, Tuple]) -> None:
         self.ax.clear()
         self.ax.set_facecolor(background)
         self.ax.invert_yaxis()
@@ -68,21 +74,29 @@ class SpeckPlot:
         self.ax.set_xticks([])
         self.ax.set_yticks([])
 
-    def cache_clear(self, method: Optional[str] = None) -> None:
-        if method is not None:
-            getattr(self, method).cache_clear()
+    def cache_clear(self, parameter: Optional[str] = None) -> None:
+        if parameter is not None:
+            getattr(self, parameter).cache_clear()
         else:
             self.x.cache_clear()
             self.y.cache_clear()
             self.noise.cache_clear()
             self.colour.cache_clear()
 
+    def cache_info(self) -> dict:
+        return {
+            'x': self.x.cache_info(),
+            'y': self.y.cache_info(),
+            'noise': self.noise.cache_info(),
+            'colour': self.colour.cache_info(),
+        }
+
     @lru_cache()
-    def x(self) -> np.ndarray:
+    def x(self) -> XData:
         return np.linspace(0, self.w, self.w * self.inter)
 
     @lru_cache()
-    def y(self, y_range: Tuple[float, float]) -> List[Tuple[np.ndarray, np.ndarray]]:
+    def y(self, y_range: Tuple[float, float]) -> YData:
         y_min = y_range[0] / 2 + 0.5
         y_max = y_range[1] / 2 + 0.5
 
@@ -115,18 +129,14 @@ class SpeckPlot:
         return y
 
     @lru_cache()
-    def noise(
-        self, noise: Optional[Noise]
-    ) -> List[Tuple[Union[np.ndarray, int], Union[np.ndarray, int]]]:
+    def noise(self, noise: Optional[Noise]) -> NoiseData:
         if noise is not None:
             return noise(self.h, self.w * self.inter)
         else:
             return [(0, 0) for _ in self.h]
 
     @lru_cache()
-    def colour(
-        self, colour: Union[str, Iterable, Colour]
-    ) -> Union[Iterable, Iterable[Tuple]]:
+    def colour(self, colour: Union[str, Iterable, Colour]) -> ColourData:
         if isinstance(colour, str):
             return [colour]
         if isinstance(colour, Iterable):

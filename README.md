@@ -6,10 +6,10 @@
 
 
 Render images as a set of continuous lines representing each horizontal row of pixels:
-- Line width varies with greyscale pixel darkness.
-- Set line width range. Lower range effectively reduces contrast
-- Add noise profiles to introduce randomness
-- Add colour profiles to vary line colours
+- Line widths vary with greyscale pixel darkness.
+- Set line width range. Lower range effectively reduces contrast.
+- Add noise profiles to introduce randomness.
+- Add colour profiles to vary line colours.
 
 ## Example:
 

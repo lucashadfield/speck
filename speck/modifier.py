@@ -1,20 +1,17 @@
+__all__ = ['LineThicknessModifier']
+
 import numpy as np
 from typing import List, Iterable, Tuple, Union, Callable
 from functools import partial
 
+from speck.draw import XData, YData, NoiseData, ColourData
+
 
 class Modifier:
     def __call__(
-        self,
-        x: np.ndarray,
-        y: List[Tuple[np.ndarray, np.ndarray]],
-        n: List[Tuple[Union[np.ndarray, int], Union[np.ndarray, int]]],
-        c: Union[Iterable, Iterable[Tuple]],
+        self, x: XData, y: YData, n: NoiseData, c: ColourData,
     ) -> Tuple[
-        np.ndarray,
-        List[Tuple[np.ndarray, np.ndarray]],
-        List[Tuple[Union[np.ndarray, int], Union[np.ndarray, int]]],
-        Union[Iterable, Iterable[Tuple]],
+        XData, YData, NoiseData, ColourData,
     ]:
         raise NotImplementedError
 
