@@ -34,6 +34,9 @@ class Noise:
                 noise_b.append(self._generate(n))
             return [(a, b) for a, b in zip(noise_a, noise_b)]
 
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
 
 class RandomNoise(Noise):
     def __init__(
@@ -58,6 +61,9 @@ class RandomNoise(Noise):
         return np.convolve(res, np.ones((self.mean_n,)) / self.mean_n)[
             (self.mean_n - 1) : -1
         ]
+
+    def __hash__(self):
+        return hash((self.profile, self.scale, self.pull, self.mean_n))
 
 
 class SineNoise(Noise):
@@ -91,3 +97,15 @@ class SineNoise(Noise):
                 )
             ]
         ).prod(axis=0)
+
+    def __hash__(self):
+        return hash(
+            (
+                self.profile,
+                self.scale,
+                self.wave_count,
+                self.base_freq,
+                self.freq_factor,
+                self.offset_range,
+            )
+        )

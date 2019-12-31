@@ -20,7 +20,7 @@ class SpeckPlot:
     k = 10
     inter = 100
 
-    def __init__(self, image: Image, fig_short_edge: float = 10):
+    def __init__(self, image: Image, fig_short_edge: float = 10.0):
         self.image = image
         self.fig_short_edge = fig_short_edge
         self.im = np.array(image.convert('L'))
@@ -34,8 +34,28 @@ class SpeckPlot:
         plt.close(self.fig)
 
     @classmethod
-    def from_path(cls, path: str, fig_short_edge: float = 10):
-        return cls(Image.open(path), fig_short_edge)
+    def from_path(
+        cls, path: str, resize: Optional[Tuple] = None, fig_short_edge: float = 10.0
+    ):
+        image = Image.open(path)
+        if resize is not None:
+            image = image.resize(resize)
+        return cls(image, fig_short_edge)
+
+    @classmethod
+    def from_url(
+        cls, url: str, resize: Optional[Tuple] = None, fig_short_edge: float = 10.0
+    ):
+        import requests
+        from io import BytesIO
+
+        image = Image.open(BytesIO(requests.get(url).content))
+        if resize is not None:
+            image = image.resize(resize)
+        return cls(image, fig_short_edge)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.image}, {self.fig_short_edge})'
 
     def _clear_ax(self, background) -> None:
         self.ax.clear()

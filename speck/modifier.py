@@ -19,7 +19,7 @@ class Modifier:
         raise NotImplementedError
 
 
-class LineThickness(Modifier):
+class LineThicknessModifier(Modifier):
     def __init__(
         self, thicknesses: Iterable[int], aggregation: Union[str, Callable] = 'sum'
     ):

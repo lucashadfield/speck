@@ -10,13 +10,20 @@ class Colour:
     def __call__(self, m: int) -> Iterable[Tuple]:
         raise NotImplementedError
 
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
 
 class GradientColour(Colour):
     def __init__(self, colour_list: List[str]):
+        self.colour_list = colour_list
         self.cmap = mpl.colors.LinearSegmentedColormap.from_list("", colour_list)
 
     def __call__(self, m: int) -> Iterable[Tuple]:
         return [self.cmap(x) for x in np.linspace(0, 1, m, endpoint=False)]
+
+    def __hash__(self):
+        return hash(tuple(self.colour_list))
 
 
 class CmapColour(Colour):
@@ -25,6 +32,9 @@ class CmapColour(Colour):
 
     def __call__(self, m: int) -> Iterable[Tuple]:
         return [self.cmap(x) for x in np.linspace(0, 1, m, endpoint=False)]
+
+    def __hash__(self):
+        return hash(str(self.cmap))
 
 
 class KMeansColour(Colour):
