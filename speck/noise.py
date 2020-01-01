@@ -3,6 +3,8 @@ __all__ = ['RandomNoise', 'SineNoise']
 import numpy as np
 from typing import List, Tuple
 
+from speck.rand import randargs
+
 
 class Noise:
     def __init__(self, profile: str, *args, **kwargs):
@@ -13,8 +15,9 @@ class Noise:
 
         self.profile = profile
 
-    def _generate(self, n: int) -> np.ndarray:
-        raise NotImplementedError
+    def __repr__(self):
+        d = [f'{k}={v}' for k, v in self.__dict__.items() if not k.startswith('_')]
+        return f'{self.__class__.__name__}({", ".join(d)})'
 
     def __call__(self, m: int, n: int) -> List[Tuple]:
         # m = number of rows (lines)
@@ -37,7 +40,11 @@ class Noise:
     def __eq__(self, other):
         return hash(self) == hash(other)
 
+    def _generate(self, n: int) -> np.ndarray:
+        raise NotImplementedError
 
+
+@randargs
 class RandomNoise(Noise):
     def __init__(
         self,
@@ -66,6 +73,7 @@ class RandomNoise(Noise):
         return hash((self.profile, self.scale, self.pull, self.mean_n))
 
 
+@randargs
 class SineNoise(Noise):
     def __init__(
         self,

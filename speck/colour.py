@@ -5,27 +5,37 @@ import matplotlib as mpl
 from typing import Union, Iterable, List, Tuple
 import cv2
 
+from speck.rand import randargs
+
 
 class Colour:
     def __call__(self, m: int) -> Iterable[Tuple]:
         raise NotImplementedError
 
+    def __repr__(self):
+        d = [f'{k}={v}' for k, v in self.__dict__.items() if not k.startswith('_')]
+        return f'{self.__class__.__name__}({", ".join(d)})'
+
     def __eq__(self, other):
         return hash(self) == hash(other)
 
 
+@randargs
 class GradientColour(Colour):
     def __init__(self, colour_list: List[str]):
+        if len(colour_list) == 1:
+            colour_list = [colour_list[0], colour_list[0]]
         self.colour_list = colour_list
-        self.cmap = mpl.colors.LinearSegmentedColormap.from_list("", colour_list)
+        self._cmap = mpl.colors.LinearSegmentedColormap.from_list("", colour_list)
 
     def __call__(self, m: int) -> Iterable[Tuple]:
-        return [self.cmap(x) for x in np.linspace(0, 1, m, endpoint=False)]
+        return [self._cmap(x) for x in np.linspace(0, 1, m, endpoint=False)]
 
     def __hash__(self):
         return hash(tuple(self.colour_list))
 
 
+@randargs
 class CmapColour(Colour):
     def __init__(self, cmap: Union[str, mpl.colors.Colormap]):
         self.cmap = mpl.cm.get_cmap(cmap) if isinstance(cmap, str) else cmap
@@ -37,6 +47,7 @@ class CmapColour(Colour):
         return hash(str(self.cmap))
 
 
+@randargs
 class KMeansColour(Colour):
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, 0.1)
     flags = cv2.KMEANS_RANDOM_CENTERS
@@ -62,6 +73,7 @@ class KMeansColour(Colour):
         )
 
 
+@randargs
 class GreyscaleMeanColour(Colour):
     def __init__(self, speck_plot):
         self.im = speck_plot.im

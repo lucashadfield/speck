@@ -1,4 +1,4 @@
-![speck](https://i.imgur.com/nE4Xhac.png)
+![speck](https://i.imgur.com/MFWe4EW.png)
 ======
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](#)

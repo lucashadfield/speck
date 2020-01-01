@@ -1,5 +1,8 @@
 import ipywidgets
+import random
 import numpy as np
+from typing import Callable
+
 from speck.noise import SineNoise
 from speck.colour import GradientColour
 

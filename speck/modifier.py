@@ -4,7 +4,7 @@ import numpy as np
 from typing import List, Iterable, Tuple, Union, Callable
 from functools import partial
 
-from speck.draw import XData, YData, NoiseData, ColourData
+from speck.types import XData, YData, NoiseData, ColourData
 
 
 class Modifier:

@@ -3,23 +3,20 @@ __all__ = ['SpeckPlot']
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import figure
+from matplotlib.axis import Axis
 from PIL import Image
 from itertools import cycle
-from typing import Union, Iterable, Optional, List, Tuple
+from typing import Union, Iterable, Optional, Tuple
 import logging
 from functools import lru_cache
 
 from speck.noise import Noise
 from speck.colour import Colour
 from speck.modifier import Modifier
+from speck.rand import randargs
+from speck.types import *
 
 logger = logging.getLogger('speck')
-
-
-XData = np.ndarray
-YData = List[Tuple[np.ndarray, np.ndarray]]
-NoiseData = List[Tuple[Union[np.ndarray, int], Union[np.ndarray, int]]]
-ColourData = Union[Iterable, Iterable[Tuple]]
 
 
 class SpeckPlot:
@@ -61,7 +58,8 @@ class SpeckPlot:
         return cls(image, fig_short_edge)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.image}, {self.fig_short_edge})'
+        d = [f'{k}={v}' for k, v in self.__dict__.items() if not k.startswith('_')]
+        return f'{self.__class__.__name__}({", ".join(d)})'
 
     def _clear_ax(self, background: Union[str, Tuple]) -> None:
         self.ax.clear()
@@ -133,7 +131,7 @@ class SpeckPlot:
         if noise is not None:
             return noise(self.h, self.w * self.inter)
         else:
-            return [(0, 0) for _ in self.h]
+            return [(0, 0) for _ in range(self.h)]
 
     @lru_cache()
     def colour(self, colour: Union[str, Iterable, Colour]) -> ColourData:
@@ -144,6 +142,7 @@ class SpeckPlot:
         if isinstance(colour, Colour):
             return colour(self.h)
 
+    @randargs
     def draw(
         self,
         y_range: Tuple[float, float] = (0, 1),
@@ -152,6 +151,7 @@ class SpeckPlot:
         modifiers: Optional[Iterable[Modifier]] = None,
         background: Union[str, Tuple] = 'white',
         seed: Optional[int] = None,
+        ax: Optional[Axis] = None,
     ) -> figure:
         if seed is not None:
             np.random.seed(seed)
@@ -165,6 +165,8 @@ class SpeckPlot:
             for m in modifiers:
                 x, y, n, c = m(x, y, n, c)
 
+        if ax is not None:
+            self.ax = ax
         self._clear_ax(background)
         for y_, n_, c_ in zip(y, cycle(n), cycle(c)):
             y_top = y_[0] + n_[0]
@@ -173,3 +175,6 @@ class SpeckPlot:
             self.ax.fill_between(x, y_top, y_bot, color=c_, lw=0)
 
         return self.fig
+
+    def __call__(self, *args, **kwargs):
+        return self.draw(*args, **kwargs)
