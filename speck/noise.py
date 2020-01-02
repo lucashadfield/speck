@@ -3,8 +3,6 @@ __all__ = ['RandomNoise', 'SineNoise']
 import numpy as np
 from typing import List, Tuple
 
-from speck.rand import randargs
-
 
 class Noise:
     def __init__(self, profile: str, *args, **kwargs):
@@ -18,6 +16,14 @@ class Noise:
     def __repr__(self):
         d = [f'{k}={v}' for k, v in self.__dict__.items() if not k.startswith('_')]
         return f'{self.__class__.__name__}({", ".join(d)})'
+
+    def __hash__(self):
+        return hash(
+            tuple([v for k, v in self.__dict__.items() if not k.startswith('_')])
+        )
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
     def __call__(self, m: int, n: int) -> List[Tuple]:
         # m = number of rows (lines)
@@ -37,14 +43,10 @@ class Noise:
                 noise_b.append(self._generate(n))
             return [(a, b) for a, b in zip(noise_a, noise_b)]
 
-    def __eq__(self, other):
-        return hash(self) == hash(other)
-
     def _generate(self, n: int) -> np.ndarray:
         raise NotImplementedError
 
 
-@randargs
 class RandomNoise(Noise):
     def __init__(
         self,
@@ -69,11 +71,7 @@ class RandomNoise(Noise):
             (self.mean_n - 1) : -1
         ]
 
-    def __hash__(self):
-        return hash((self.profile, self.scale, self.pull, self.mean_n))
 
-
-@randargs
 class SineNoise(Noise):
     def __init__(
         self,
@@ -82,13 +80,13 @@ class SineNoise(Noise):
         wave_count: int = 3,
         base_freq: float = 3.0,
         freq_factor: Tuple[float, float] = (1.0, 3.0),
-        offset_range: Tuple[float, float] = (0, 2 * np.pi),
+        phase_offset_range: Tuple[float, float] = (0, 360),
     ):
         self.scale = scale
         self.wave_count = wave_count
         self.base_freq = base_freq
         self.freq_factor = freq_factor
-        self.offset_range = offset_range
+        self.phase_offset_range = phase_offset_range
 
         super().__init__(profile)
 
@@ -101,19 +99,11 @@ class SineNoise(Noise):
                 )
                 for factor, offset in zip(
                     np.random.uniform(*self.freq_factor, self.wave_count),
-                    np.random.uniform(*self.offset_range, self.wave_count),
+                    np.random.uniform(
+                        np.deg2rad(self.phase_offset_range[0]),
+                        np.deg2rad(self.phase_offset_range[1]),
+                        self.wave_count,
+                    ),
                 )
             ]
         ).prod(axis=0)
-
-    def __hash__(self):
-        return hash(
-            (
-                self.profile,
-                self.scale,
-                self.wave_count,
-                self.base_freq,
-                self.freq_factor,
-                self.offset_range,
-            )
-        )

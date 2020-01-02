@@ -13,7 +13,6 @@ from functools import lru_cache
 from speck.noise import Noise
 from speck.colour import Colour
 from speck.modifier import Modifier
-from speck.rand import randargs
 from speck.types import *
 
 logger = logging.getLogger('speck')
@@ -22,32 +21,32 @@ logger = logging.getLogger('speck')
 class SpeckPlot:
     k = 10
     inter = 100
+    dpi = 100
 
-    def __init__(self, image: Image, fig_short_edge: float = 10.0):
+    def __init__(self, image: Image, scale_factor: float = 5.0):
         self.image = image
-        self.fig_short_edge = fig_short_edge
+        self.scale_factor = scale_factor
         self.im = np.array(image.convert('L'))
         self.h, self.w = self.im.shape
 
-        self.fig, self.ax = plt.subplots(
-            figsize=[
-                x * fig_short_edge / min((self.w, self.h)) for x in (self.w, self.h)
-            ]
+        self.fig = plt.figure(
+            figsize=(self.w * scale_factor / self.dpi, self.h * scale_factor / self.dpi)
         )
+        self.ax = self.fig.add_axes([0.0, 0.0, 1.0, 1.0], xticks=[], yticks=[])
         plt.close(self.fig)
 
     @classmethod
     def from_path(
-        cls, path: str, resize: Optional[Tuple] = None, fig_short_edge: float = 10.0
+        cls, path: str, scale_factor: float = 3.0, resize: Optional[Tuple] = None
     ):
         image = Image.open(path)
         if resize is not None:
             image = image.resize(resize)
-        return cls(image, fig_short_edge)
+        return cls(image, scale_factor)
 
     @classmethod
     def from_url(
-        cls, url: str, resize: Optional[Tuple] = None, fig_short_edge: float = 10.0
+        cls, url: str, scale_factor: float = 3.0, resize: Optional[Tuple] = None
     ):
         import requests
         from io import BytesIO
@@ -55,7 +54,7 @@ class SpeckPlot:
         image = Image.open(BytesIO(requests.get(url).content))
         if resize is not None:
             image = image.resize(resize)
-        return cls(image, fig_short_edge)
+        return cls(image, scale_factor)
 
     def __repr__(self):
         d = [f'{k}={v}' for k, v in self.__dict__.items() if not k.startswith('_')]
@@ -142,7 +141,6 @@ class SpeckPlot:
         if isinstance(colour, Colour):
             return colour(self.h)
 
-    @randargs
     def draw(
         self,
         y_range: Tuple[float, float] = (0, 1),
@@ -176,5 +174,5 @@ class SpeckPlot:
 
         return self.fig
 
-    def __call__(self, *args, **kwargs):
-        return self.draw(*args, **kwargs)
+    def save(self, path: str) -> None:
+        self.fig.savefig(path, dpi=self.dpi, bbox_inches='tight', pad_inches=0)
