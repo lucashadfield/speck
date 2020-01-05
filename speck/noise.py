@@ -1,7 +1,7 @@
 __all__ = ['RandomNoise', 'SineNoise']
 
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 
 class Noise:
@@ -14,6 +14,11 @@ class Noise:
         self.profile = profile
 
     def __repr__(self):
+        """
+        Auto __repr__ based on instance __dict__
+        Parameters with a leading _ are omitted from the repr and thus from the hash
+        """
+
         d = [f'{k}={v}' for k, v in self.__dict__.items() if not k.startswith('_')]
         return f'{self.__class__.__name__}({", ".join(d)})'
 
@@ -55,6 +60,17 @@ class RandomNoise(Noise):
         pull: float = 0.1,
         mean_n: int = 100,
     ):
+        """
+        Create RandomNoise object to be passed to SpeckPlot.draw method
+        :param profile: noise profile to apply to each line
+                'parallel': apply the same noise profile to the top and bottom edge of each line so they remain parallel
+                'reflect': apply opposite noise profiles to the top and bottom edge of each line
+                'independent': apply independently generated noise profiles to the top and bottom edge of each line
+        :param scale: magnitude of the noise generated
+        :param pull: affects magnitude of subsequent noise offsets to avoid out of control noise
+        :param mean_n: number of random noise values that are averaged together - smoother noise
+        """
+
         self.scale = scale
         self.pull = pull
         self.mean_n = mean_n
@@ -76,12 +92,27 @@ class SineNoise(Noise):
     def __init__(
         self,
         profile: str = 'parallel',
-        scale: float = 0.5,
+        scale: Union[float, tuple] = 0.5,
         wave_count: int = 3,
         base_freq: float = 3.0,
         freq_factor: Tuple[float, float] = (1.0, 3.0),
         phase_offset_range: Tuple[float, float] = (0, 360),
     ):
+        """
+        Create SineNoise object to be passed to SpeckPlot.draw method
+        :param profile: noise profile to apply to each line
+                'parallel': apply the same noise profile to the top and bottom edge of each line so they remain parallel
+                'reflect': apply opposite noise profiles to the top and bottom edge of each line
+                'independent': apply independently generated noise profiles to the top and bottom edge of each line
+        :param scale: magnitude of the noise generated.
+                Either constant noise as a float or a tuple of length SpeckPlot.w * SpeckPlot * h, eg:
+                scale = tuple(np.linspace(0.5, 1.5, speck_plot.w * speck_plot.h))
+        :param wave_count: number of sine waves that are combined to create the noise profile
+        :param base_freq: base number of wavelengths that fit in the width of the image
+        :param freq_factor: range of random multipliers that are applied to the base frequency for each wave
+        :param phase_offset_range: range of random offsets that are applied to each wave
+        """
+
         self.scale = scale
         self.wave_count = wave_count
         self.base_freq = base_freq

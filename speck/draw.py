@@ -19,11 +19,17 @@ logger = logging.getLogger('speck')
 
 
 class SpeckPlot:
-    k = 10
-    inter = 100
-    dpi = 100
+    k = 10  # logistic growth rate on pixel boundaries
+    inter = 100  # x-axis points generated between each input image pixel
+    dpi = 100  # figure dpi used for plotting and saving
 
     def __init__(self, image: Image, scale_factor: float = 5.0):
+        """
+        Create a SpeckPlot from a PIL Image
+        :param image: PIL image
+        :param scale_factor: the pixel scaling factor, each input pixel maps to scale_factor output pixels
+        """
+
         self.image = image
         self.scale_factor = scale_factor
         self.im = np.array(image.convert('L'))
@@ -39,6 +45,13 @@ class SpeckPlot:
     def from_path(
         cls, path: str, scale_factor: float = 3.0, resize: Optional[Tuple] = None
     ):
+        """
+        Create a SpeckPlot from an image path
+        :param path: path to image file
+        :param scale_factor: the pixel scaling factor, each input pixel maps to scale_factor output pixels
+        :param resize: dimensions to resize to
+        """
+
         image = Image.open(path)
         if resize is not None:
             image = image.resize(resize)
@@ -48,6 +61,13 @@ class SpeckPlot:
     def from_url(
         cls, url: str, scale_factor: float = 3.0, resize: Optional[Tuple] = None
     ):
+        """
+        Create SpeckPlot from image URL
+        :param url: url string
+        :param scale_factor: the pixel scaling factor, each input pixel maps to scale_factor output pixels
+        :param resize: dimensions to resize to
+        """
+
         import requests
         from io import BytesIO
 
@@ -75,27 +95,27 @@ class SpeckPlot:
         if parameter is not None:
             getattr(self, parameter).cache_clear()
         else:
-            self.x.cache_clear()
-            self.y.cache_clear()
-            self.noise.cache_clear()
-            self.colour.cache_clear()
+            self._x.cache_clear()
+            self._y.cache_clear()
+            self._noise.cache_clear()
+            self._colour.cache_clear()
 
     def cache_info(self) -> dict:
         return {
-            'x': self.x.cache_info(),
-            'y': self.y.cache_info(),
-            'noise': self.noise.cache_info(),
-            'colour': self.colour.cache_info(),
+            'x': self._x.cache_info(),
+            'y': self._y.cache_info(),
+            'noise': self._noise.cache_info(),
+            'colour': self._colour.cache_info(),
         }
 
     @lru_cache()
-    def x(self) -> XData:
+    def _x(self) -> XData:
         return np.linspace(0, self.w, self.w * self.inter)
 
     @lru_cache()
-    def y(self, y_range: Tuple[float, float]) -> YData:
-        y_min = y_range[0] / 2 + 0.5
-        y_max = y_range[1] / 2 + 0.5
+    def _y(self, weights: Tuple[float, float], skip: int) -> YData:
+        y_min = weights[0] / 2 + 0.5
+        y_max = weights[1] / 2 + 0.5
 
         def repeat_head_tail(arr: np.ndarray, n: int) -> np.ndarray:
             return np.insert(
@@ -105,6 +125,9 @@ class SpeckPlot:
         y = []
 
         for i, line in enumerate(self.im):
+            if i % (skip + 1):
+                continue
+
             y_offset = np.repeat(y_max - line[:-1] * (y_max - y_min) / 255, self.inter)
             L = (
                 np.repeat(y_max - line[1:] * (y_max - y_min) / 255, self.inter)
@@ -117,7 +140,7 @@ class SpeckPlot:
             x0 = repeat_head_tail(x0, self.inter // 2)
 
             y_top: np.ndarray = i + (
-                L / (1 + np.exp(-self.k * (self.x() - x0)))
+                L / (1 + np.exp(-self.k * (self._x() - x0)))
             ) + y_offset
             y_bot: np.ndarray = 2 * i + 1 - y_top
 
@@ -126,14 +149,14 @@ class SpeckPlot:
         return y
 
     @lru_cache()
-    def noise(self, noise: Optional[Noise]) -> NoiseData:
+    def _noise(self, noise: Optional[Noise]) -> NoiseData:
         if noise is not None:
             return noise(self.h, self.w * self.inter)
         else:
             return [(0, 0) for _ in range(self.h)]
 
     @lru_cache()
-    def colour(self, colour: Union[str, Iterable, Colour]) -> ColourData:
+    def _colour(self, colour: Union[str, Iterable, Colour]) -> ColourData:
         if isinstance(colour, str):
             return [colour]
         if isinstance(colour, Iterable):
@@ -143,21 +166,44 @@ class SpeckPlot:
 
     def draw(
         self,
-        y_range: Tuple[float, float] = (0, 1),
+        weights: Tuple[float, float] = (0, 1),
+        shade_limits: Tuple[float, float] = (0, 1),
         noise: Optional[Noise] = None,
         colour: Union[str, Iterable, Colour] = 'black',
-        modifiers: Optional[Iterable[Modifier]] = None,
+        skip: int = 0,
         background: Union[str, Tuple] = 'white',
+        modifiers: Optional[Iterable[Modifier]] = None,
         seed: Optional[int] = None,
         ax: Optional[Axis] = None,
     ) -> figure:
+        """
+        Render the input image to produce a matplotlib figure
+
+        :param weights: min and max line widths
+                eg. weights = (0.2, 0.9) =
+                    0.2 units of line weight mapped from <= min darkness offset
+                    0.9 units of line weight mapped from >= max darkness offset
+        :param shade_limits: proportion of greys that map to min and max thicknesses.
+                eg. shade_limits = (0.1, 0.8) =
+                    <=10% grey maps to min weight range
+                    >=80% grey maps to max weight range
+        :param noise: Noise object that is called and added onto thickness values
+        :param colour: Colour object that is called and applied to lines
+        :param skip: number of lines of pixels to skip for each plotted line
+        :param background: background colour of output plot
+        :param modifiers: list of Modifier objects that are iteratively applied to the output x, y, noise and colour data
+        :param seed: random seed value
+        :param ax: optional Axis object to plot on to
+        :return: matplotlib figure object containing the plot
+        """
+
         if seed is not None:
             np.random.seed(seed)
 
-        x = self.x()
-        y = self.y(y_range)
-        n = self.noise(noise)
-        c = self.colour(colour)
+        x = self._x()
+        y = self._y(weights, skip)
+        n = self._noise(noise)
+        c = self._colour(colour)
 
         if modifiers is not None:
             for m in modifiers:
@@ -174,5 +220,17 @@ class SpeckPlot:
 
         return self.fig
 
-    def save(self, path: str) -> None:
-        self.fig.savefig(path, dpi=self.dpi, bbox_inches='tight', pad_inches=0)
+    def save(self, path: str, transparent: bool = False) -> None:
+        """
+        Save rendered figure to disk. Call this after the draw method
+        :param path: path to save location
+        :param transparent: whether to save with a transparent background (assuming .png extension)
+        """
+
+        self.fig.savefig(
+            path,
+            dpi=self.dpi,
+            bbox_inches='tight',
+            pad_inches=0,
+            transparent=transparent,
+        )

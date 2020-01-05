@@ -1,4 +1,4 @@
-__all__ = ['LineThicknessModifier']
+__all__ = ['LineUnionModifier']
 
 import numpy as np
 from typing import List, Iterable, Tuple, Union, Callable
@@ -16,10 +16,21 @@ class Modifier:
         raise NotImplementedError
 
 
-class LineThicknessModifier(Modifier):
+class LineUnionModifier(Modifier):
     def __init__(
         self, thicknesses: Iterable[int], aggregation: Union[str, Callable] = 'sum'
     ):
+        """
+        Combines multiple rendered lines together to allow for building more complex line weight profiles
+        :param thicknesses: list of number of lines to combine. sum(thicknesses) should equal speck_plot.h, eg.
+                    thicknesses = [1, 2, 3, 4, 5] =>
+                        - first line is 1 line thick
+                        - second line is the union of second and third line
+                        - third line is the union of the next 3 lines, etc...
+                        - speck_plot.h should be 15 in this example
+        :param aggregation: aggregation method to apply to sets of combined lines
+        """
+
         if 0 in thicknesses:
             raise AssertionError('Invalid thickness: 0')
         self.thicknesses = thicknesses

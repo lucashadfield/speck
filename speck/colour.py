@@ -8,6 +8,11 @@ import cv2
 
 class Colour:
     def __repr__(self):
+        """
+        Auto __repr__ based on instance __dict__
+        Parameters with a leading _ are omitted from the repr and thus from the hash
+        """
+
         d = [f'{k}={v}' for k, v in self.__dict__.items() if not k.startswith('_')]
         return f'{self.__class__.__name__}({", ".join(d)})'
 
@@ -25,6 +30,12 @@ class Colour:
 
 class GradientColour(Colour):
     def __init__(self, colour_list: List[str]):
+        """
+        Create GradientColour object to be passed to SpeckPlot.draw method.
+        Colours each line according to a generated colour between the provided checkpoint colours.
+        :param colour_list: colours between which colour gradients are generated to colour each line
+        """
+
         if len(colour_list) == 1:
             colour_list = [colour_list[0], colour_list[0]]
         self.colour_list = colour_list
@@ -36,6 +47,12 @@ class GradientColour(Colour):
 
 class CmapColour(Colour):
     def __init__(self, cmap: Union[str, mpl.colors.Colormap]):
+        """
+        Create CmapColour object to be passed to SpeckPlot.draw method.
+        Colour each line according to pre-defined matplotlib cmap.
+        :param cmap: matplotlib cmap object or name to generate line colours according to
+        """
+
         self.cmap = mpl.cm.get_cmap(cmap) if isinstance(cmap, str) else cmap
 
     def __call__(self, m: int) -> Iterable[Tuple]:
@@ -47,6 +64,14 @@ class KMeansColour(Colour):
     flags = cv2.KMEANS_RANDOM_CENTERS
 
     def __init__(self, speck_plot, k: int = 5):
+        """
+        Create KMeansColour object to be passed to SpeckPlot.draw method.
+        Clusters each horizontal line of pixel colour values into k groups using k-means to determine
+        the dominant colour of that row, and then sets the line colour to that.
+        :param speck_plot: SpeckPlot object to base colours on
+        :param k: number of groups for k-means
+        """
+
         if speck_plot.image.mode != 'RGB':
             raise AssertionError('KMeansColour requires RGB image mode')
 
@@ -69,6 +94,12 @@ class KMeansColour(Colour):
 
 class GreyscaleMeanColour(Colour):
     def __init__(self, speck_plot):
+        """
+        Create GreyScacleMeanColour objrect to be passed to SpeckPlot.draw method.
+        Takes the mean greyscale colour of each row of pixels and makes the line that colour.
+        :param speck_plot: SpeckPlot object to base colours on
+        """
+
         self.im = speck_plot.im
 
     def __call__(self, m: int) -> Iterable[Tuple]:
