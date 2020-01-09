@@ -23,49 +23,65 @@ class SpeckPlot:
     inter = 100  # x-axis points generated between each input image pixel
     dpi = 100  # figure dpi used for plotting and saving
 
-    def __init__(self, image: Image, scale_factor: float = 5.0):
+    def __init__(
+        self, image: Image, scale_factor: float = 5.0, horizontal: bool = True
+    ):
         """
         Create a SpeckPlot from a PIL Image
         :param image: PIL image
         :param scale_factor: the pixel scaling factor, each input pixel maps to scale_factor output pixels
+        :param horizontal: use horizontal lines to render the image
         """
 
         self.image = image
         self.scale_factor = scale_factor
-        self.im = np.array(image.convert('L'))
-        self.h, self.w = self.im.shape
+        self.horizontal = horizontal
+        if self.horizontal:
+            self.im = np.array(image.convert('L'))
+        else:
+            self.im = np.array(image.convert('L').rotate(-90, expand=1))
 
-        self.fig = plt.figure(
-            figsize=(self.w * scale_factor / self.dpi, self.h * scale_factor / self.dpi)
-        )
+        self.h, self.w = self.im.shape
+        figsize = self.w * scale_factor / self.dpi, self.h * scale_factor / self.dpi
+        self.fig = plt.figure(figsize=figsize if self.horizontal else figsize[::-1])
         self.ax = self.fig.add_axes([0.0, 0.0, 1.0, 1.0], xticks=[], yticks=[])
         plt.close(self.fig)
 
     @classmethod
     def from_path(
-        cls, path: str, scale_factor: float = 3.0, resize: Optional[Tuple] = None
+        cls,
+        path: str,
+        scale_factor: float = 3.0,
+        resize: Optional[Tuple] = None,
+        horizontal: bool = True,
     ):
         """
         Create a SpeckPlot from an image path
         :param path: path to image file
         :param scale_factor: the pixel scaling factor, each input pixel maps to scale_factor output pixels
         :param resize: dimensions to resize to
+        :param horizontal: use horizontal lines to render the image
         """
 
         image = Image.open(path)
         if resize is not None:
             image = image.resize(resize)
-        return cls(image, scale_factor)
+        return cls(image, scale_factor, horizontal)
 
     @classmethod
     def from_url(
-        cls, url: str, scale_factor: float = 3.0, resize: Optional[Tuple] = None
+        cls,
+        url: str,
+        scale_factor: float = 3.0,
+        resize: Optional[Tuple] = None,
+        horizontal: bool = False,
     ):
         """
         Create SpeckPlot from image URL
         :param url: url string
         :param scale_factor: the pixel scaling factor, each input pixel maps to scale_factor output pixels
         :param resize: dimensions to resize to
+        :param horizontal: use horizontal lines to render the image
         """
 
         import requests
@@ -74,7 +90,7 @@ class SpeckPlot:
         image = Image.open(BytesIO(requests.get(url).content))
         if resize is not None:
             image = image.resize(resize)
-        return cls(image, scale_factor)
+        return cls(image, scale_factor, horizontal)
 
     def __repr__(self):
         d = [f'{k}={v}' for k, v in self.__dict__.items() if not k.startswith('_')]
@@ -83,7 +99,8 @@ class SpeckPlot:
     def _clear_ax(self, background: Union[str, Tuple]) -> None:
         self.ax.clear()
         self.ax.set_facecolor(background)
-        self.ax.invert_yaxis()
+        if self.horizontal:
+            self.ax.invert_yaxis()
         self.ax.spines['left'].set_visible(False)
         self.ax.spines['right'].set_visible(False)
         self.ax.spines['top'].set_visible(False)
@@ -113,9 +130,16 @@ class SpeckPlot:
         return np.linspace(0, self.w, self.w * self.inter)
 
     @lru_cache()
-    def _y(self, weights: Tuple[float, float], skip: int) -> YData:
+    def _y(
+        self,
+        weights: Tuple[float, float],
+        weight_clipping: Tuple[float, float],
+        skip: int,
+    ) -> YData:
         y_min = weights[0] / 2 + 0.5
         y_max = weights[1] / 2 + 0.5
+        clip_min = (1 - weight_clipping[1]) * 255.0
+        clip_max = (1 - weight_clipping[0]) * 255.0
 
         def repeat_head_tail(arr: np.ndarray, n: int) -> np.ndarray:
             return np.insert(
@@ -128,11 +152,17 @@ class SpeckPlot:
             if i % (skip + 1):
                 continue
 
+            # apply clipping
+            line = (
+                (line.clip(clip_min, clip_max) - clip_min) * 255 / (clip_max - clip_min)
+            )
+
             y_offset = np.repeat(y_max - line[:-1] * (y_max - y_min) / 255, self.inter)
             L = (
                 np.repeat(y_max - line[1:] * (y_max - y_min) / 255, self.inter)
                 - y_offset
             )
+
             x0 = np.repeat(np.arange(1, self.w), self.inter)
 
             y_offset = repeat_head_tail(y_offset, self.inter // 2)
@@ -167,7 +197,7 @@ class SpeckPlot:
     def draw(
         self,
         weights: Tuple[float, float] = (0, 1),
-        shade_limits: Tuple[float, float] = (0, 1),
+        weight_clipping: Tuple[float, float] = (0, 1),
         noise: Optional[Noise] = None,
         colour: Union[str, Iterable, Colour] = 'black',
         skip: int = 0,
@@ -183,10 +213,10 @@ class SpeckPlot:
                 eg. weights = (0.2, 0.9) =
                     0.2 units of line weight mapped from <= min darkness offset
                     0.9 units of line weight mapped from >= max darkness offset
-        :param shade_limits: proportion of greys that map to min and max thicknesses.
+        :param weight_clipping: proportion of greys that map to min and max thicknesses.
                 eg. shade_limits = (0.1, 0.8) =
-                    <=10% grey maps to min weight range
-                    >=80% grey maps to max weight range
+                    <=10% grey maps to min weight
+                    >=80% grey maps to max weight
         :param noise: Noise object that is called and added onto thickness values
         :param colour: Colour object that is called and applied to lines
         :param skip: number of lines of pixels to skip for each plotted line
@@ -201,14 +231,16 @@ class SpeckPlot:
             np.random.seed(seed)
 
         x = self._x()
-        y = self._y(weights, skip)
+        y = self._y(weights, weight_clipping, skip)
         n = self._noise(noise)
         c = self._colour(colour)
 
+        # run modifiers if necessary
         if modifiers is not None:
             for m in modifiers:
                 x, y, n, c = m(x, y, n, c)
 
+        # create plot elements
         if ax is not None:
             self.ax = ax
         self._clear_ax(background)
@@ -216,7 +248,10 @@ class SpeckPlot:
             y_top = y_[0] + n_[0]
             y_bot = y_[1] + n_[1]
 
-            self.ax.fill_between(x, y_top, y_bot, color=c_, lw=0)
+            if self.horizontal:
+                self.ax.fill_between(x, y_top, y_bot, color=c_, lw=0)
+            else:
+                self.ax.fill_betweenx(x, y_top, y_bot, color=c_, lw=0)
 
         return self.fig
 
