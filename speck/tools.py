@@ -11,11 +11,11 @@ from speck.colour import GradientColour
 
 class SpeckWidget:
     weights_W = ipywidgets.FloatRangeSlider(
-        value=[0, 1], min=0, max=1, steps=0.01, description='Line Widths'
+        value=[0, 1], min=0, max=1, steps=0.01, description='Line Weight'
     )
 
     weight_clipping_W = ipywidgets.FloatRangeSlider(
-        value=[0, 1], min=0, max=1, steps=0.01, description='Line Widths'
+        value=[0, 1], min=0, max=1, steps=0.01, description='Weight Clipping'
     )
 
     noise_profile_W = ipywidgets.Dropdown(
