@@ -29,7 +29,7 @@ class Colour:
 
 
 class GradientColour(Colour):
-    def __init__(self, colour_list: List[str]):
+    def __init__(self, colour_list: Tuple):
         """
         Create GradientColour object to be passed to SpeckPlot.draw method.
         Colours each line according to a generated colour between the provided checkpoint colours.

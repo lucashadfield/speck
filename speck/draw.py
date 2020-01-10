@@ -74,7 +74,7 @@ class SpeckPlot:
         url: str,
         scale_factor: float = 3.0,
         resize: Optional[Tuple] = None,
-        horizontal: bool = False,
+        horizontal: bool = True,
     ):
         """
         Create SpeckPlot from image URL
@@ -136,6 +136,7 @@ class SpeckPlot:
         weight_clipping: Tuple[float, float],
         skip: int,
     ) -> YData:
+        print(weights)
         y_min = weights[0] / 2 + 0.5
         y_max = weights[1] / 2 + 0.5
         clip_min = (1 - weight_clipping[1]) * 255.0

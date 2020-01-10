@@ -106,7 +106,7 @@ class SineNoise(Noise):
                 'independent': apply independently generated noise profiles to the top and bottom edge of each line
         :param scale: magnitude of the noise generated.
                 Either constant noise as a float or a tuple of length SpeckPlot.w * SpeckPlot * h, eg:
-                scale = tuple(np.linspace(0.5, 1.5, speck_plot.w * speck_plot.h))
+                scale = tuple(np.linspace(0.5, 1.5, speck_plot.w * speck_plot.inter))
         :param wave_count: number of sine waves that are combined to create the noise profile
         :param base_freq: base number of wavelengths that fit in the width of the image
         :param freq_factor: range of random multipliers that are applied to the base frequency for each wave
