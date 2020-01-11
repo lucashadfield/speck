@@ -9,7 +9,7 @@ try:
     import argument_randomiser as ar
 except ModuleNotFoundError as e:
     raise type(e)(
-        "No module named 'argument_randomiser', install with: 'pip install git+https://github.com/lucashadfield/argument_randomiser.git'"
+        "No module named 'argument_randomiser', install with: pip3 install git+https://github.com/lucashadfield/argument_randomiser.git"
     )
 
 

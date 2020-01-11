@@ -23,9 +23,12 @@ class Noise:
         return f'{self.__class__.__name__}({", ".join(d)})'
 
     def __hash__(self):
-        return hash(
-            tuple([v for k, v in self.__dict__.items() if not k.startswith('_')])
-        )
+        h = []
+        for k, v in self.__dict__.items():
+            if not k.startswith('_'):
+                h.append(tuple(v) if isinstance(v, list) else v)
+
+        return hash(tuple(h))
 
     def __eq__(self, other):
         return hash(self) == hash(other)

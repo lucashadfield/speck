@@ -12,7 +12,13 @@ Render images as a set of continuous lines representing each horizontal (or vert
 - Add colour profiles to vary line colours.
 - Use ipywidget to tweak outputs interactively
 
-## Basic Example:
+### Install:
+```
+pip3 install git+https://github.com/lucashadfield/speck.git
+```
+
+
+### Basic Example:
 
 ```python
 from speck import SpeckPlot, SineNoise, CmapColour
@@ -31,7 +37,7 @@ s.save(path='...')
 ![Example](https://i.imgur.com/SHUMebO.png)
 
 
-## Interactive Widget
+### Interactive Widget
 ```python
 from speck import SpeckPlot, SpeckWidget
 s = SpeckPlot.from_path('...', resize=(100, 100), scale_factor=10)

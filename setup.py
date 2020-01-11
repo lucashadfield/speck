@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='speck',
-    version='0.3.0',
+    version='0.3.1',
     author='Lucas Hadfield',
     packages=find_packages(),
     install_requires=[
@@ -14,7 +14,6 @@ setup(
         'requests',
         'pytest',
         'pytest-mpl',
-        'nose',
     ],
     include_package_data=True,
 )
