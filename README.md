@@ -58,7 +58,7 @@ Output is configured based on the arguments passed to the `draw` method of `Spec
                 (if weight_clipping is (0, 1), black is 0.9 units thick)
 - `weight_clipping`: proportion of greys that map to min and max thicknesses.
         
-        eg. shade_limits = (0.1, 0.8) =
+        eg. weight_clipping = (0.1, 0.8) =
             <=10% grey maps to min weight
             >=80% grey maps to max weight
 - `noise`: Noise object that is called and added onto thickness values (see below)

@@ -214,7 +214,7 @@ class SpeckPlot:
                     0.2 units of line weight mapped from <= min darkness offset
                     0.9 units of line weight mapped from >= max darkness offset
         :param weight_clipping: proportion of greys that map to min and max thicknesses.
-                eg. shade_limits = (0.1, 0.8) =
+                eg. weight_clipping = (0.1, 0.8) =
                     <=10% grey maps to min weight
                     >=80% grey maps to max weight
         :param noise: Noise object that is called and added onto thickness values
