@@ -52,8 +52,10 @@ Output is configured based on the arguments passed to the `draw` method of `Spec
 - `weights`: min and max line widths
         
         eg. weights = (0.2, 0.9) =
-            0.2 units of line weight mapped from <= min darkness offset
-            0.9 units of line weight mapped from >= max darkness offset
+            0.2 units of line weight mapped from <= min weight clipping 
+                (if weight_clipping is (0, 1), white is 0.2 units thick)
+            0.9 units of line weight mapped from >= max weight clipping 
+                (if weight_clipping is (0, 1), black is 0.9 units thick)
 - `weight_clipping`: proportion of greys that map to min and max thicknesses.
         
         eg. shade_limits = (0.1, 0.8) =
