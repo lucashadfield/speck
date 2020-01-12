@@ -49,7 +49,7 @@ CMAPS = (
 
 @pytest.fixture('session')
 def speck_plot():
-    s = SpeckPlot.from_path(IMAGE_PATH, scale_factor=3, resize=None, horizontal=True)
+    s = SpeckPlot.from_path(IMAGE_PATH, scale=3, resize=None, horizontal=True)
     s.draw = ar.randargs()(s.draw)
     return s
 
