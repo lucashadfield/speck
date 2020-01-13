@@ -46,6 +46,11 @@ class SpeckPlot:
         self.k = 10  # logistic growth rate on pixel boundaries
         self.inter = 10  # x-axis points generated between each input image pixel
 
+        if max(self.im.shape) > 1000:
+            logger.warning(
+                'Very large image. Consider resizing with the resize argument. Calls to .draw() and .save() will be slow.'
+            )
+
     @classmethod
     def from_path(
         cls,

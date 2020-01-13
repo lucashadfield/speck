@@ -20,7 +20,7 @@ pip install git+https://github.com/lucashadfield/speck.git
 
 ### Examples
 
-*Note: Large images can take a long time to process and might raise a MemoryError. This is because the image is scaled up substantially. The `resize` argument to `SpeckPlot` will scale down the image before processing. It supports both passing a `tuple` of dimensions and a single dimension `int` that the long edge will be scaled and that maintains the original aspect ratio. I suggest starting with `resize=100`.  
+*Note: Large images can take a long time to process and might raise a MemoryError. This is because the image is scaled up substantially. The `resize` argument to `SpeckPlot` will scale down the image before processing. It supports both passing a `tuple` of dimensions and a single dimension `int` that the long edge will be scaled to and that maintains the original aspect ratio. I suggest starting with `resize=100`.  
 For example, an image resized to (100, 100) with `upscale=10` (default) will be 1000x1000 pixels when saved.*
 
 
