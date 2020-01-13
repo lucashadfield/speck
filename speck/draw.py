@@ -19,8 +19,6 @@ logger = logging.getLogger('speck')
 
 
 class SpeckPlot:
-    k = 10  # logistic growth rate on pixel boundaries
-    inter = 10  # x-axis points generated between each input image pixel
     dpi = 100  # figure dpi used for plotting and saving
 
     def __init__(self, image: Image, upscale: float = 10.0, horizontal: bool = True):
@@ -44,6 +42,9 @@ class SpeckPlot:
         self.fig = plt.figure(figsize=figsize if self.horizontal else figsize[::-1])
         self.ax = self.fig.add_axes([0.0, 0.0, 1.0, 1.0], xticks=[], yticks=[])
         plt.close(self.fig)
+
+        self.k = 10  # logistic growth rate on pixel boundaries
+        self.inter = 10  # x-axis points generated between each input image pixel
 
     @classmethod
     def from_path(
@@ -126,6 +127,14 @@ class SpeckPlot:
             'y': self._y.cache_info(),
             'noise': self._noise.cache_info(),
         }
+
+    def set_inter(self, inter):
+        self.inter = inter
+        self.cache_clear()
+
+    def set_k(self, k):
+        self.k = k
+        self.cache_clear()
 
     @lru_cache()
     def _x(self) -> XData:

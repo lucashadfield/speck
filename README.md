@@ -160,3 +160,8 @@ Output is configured based on the arguments passed to the `draw` method of `Spec
 **Modifier Profile options:**
 - `LineUnionModifier`: Combines multiple rendered lines together to allow for building more complex line weight profiles.
 - Create your own by inheriting from Modifier
+
+**Other SpeckPlot methods:**
+- .set_inter(inter=10): sets the number of interpolated points that are generated between adjacent pixels. The higher the inter value, the smoother the curves but the longer the processing and plotting time. Set to 10 by default.
+- .set_k(k=10): sets the logistic growth rate on pixel boundaries. Higher k will result in steeper boundaries. Set to 10 by default.
+- .clear_cache(): clears the lru_cache of x, y and noise data.
