@@ -20,19 +20,19 @@ logger = logging.getLogger('speck')
 
 class SpeckPlot:
     k = 10  # logistic growth rate on pixel boundaries
-    inter = 100  # x-axis points generated between each input image pixel
+    inter = 10  # x-axis points generated between each input image pixel
     dpi = 100  # figure dpi used for plotting and saving
 
-    def __init__(self, image: Image, scale: float = 5.0, horizontal: bool = True):
+    def __init__(self, image: Image, upscale: float = 5.0, horizontal: bool = True):
         """
         Create a SpeckPlot from a PIL Image
         :param image: PIL image
-        :param scale: the pixel scaling factor, each input pixel maps to scale_factor output pixels
+        :param upscale: the pixel scaling factor, each input pixel maps to scale_factor output pixels
         :param horizontal: use horizontal lines to render the image
         """
 
         self.image = image
-        self.scale = scale
+        self.scale = upscale
         self.horizontal = horizontal
         if self.horizontal:
             self.im = np.array(image.convert('L'))
@@ -40,7 +40,7 @@ class SpeckPlot:
             self.im = np.array(image.convert('L').rotate(-90, expand=1))
 
         self.h, self.w = self.im.shape
-        figsize = self.w * scale / self.dpi, self.h * scale / self.dpi
+        figsize = self.w * upscale / self.dpi, self.h * upscale / self.dpi
         self.fig = plt.figure(figsize=figsize if self.horizontal else figsize[::-1])
         self.ax = self.fig.add_axes([0.0, 0.0, 1.0, 1.0], xticks=[], yticks=[])
         plt.close(self.fig)
@@ -49,14 +49,14 @@ class SpeckPlot:
     def from_path(
         cls,
         path: str,
-        scale: float = 3.0,
+        upscale: float = 3.0,
         resize: Union[Optional[Tuple[int, int]], int] = None,
         horizontal: bool = True,
     ):
         """
         Create a SpeckPlot from an image path
         :param path: path to image file
-        :param scale: the pixel scaling factor, each input pixel maps to scale_factor output pixels
+        :param upscale: the pixel scaling factor, each input pixel maps to scale_factor output pixels
         :param resize: dimensions to resize to or a single value to set the long edge to and keep the input aspect ratio
         :param horizontal: use horizontal lines to render the image
         """
@@ -67,20 +67,20 @@ class SpeckPlot:
                 factor = resize / max(image.size)
                 resize = round(image.size[0] * factor), round(image.size[1] * factor)
             image = image.resize(resize)
-        return cls(image, scale, horizontal)
+        return cls(image, upscale, horizontal)
 
     @classmethod
     def from_url(
         cls,
         url: str,
-        scale: float = 3.0,
+        upscale: float = 3.0,
         resize: Union[Optional[Tuple[int, int]], int] = None,
         horizontal: bool = True,
     ):
         """
         Create SpeckPlot from image URL
         :param url: url string
-        :param scale: the pixel scaling factor, each input pixel maps to scale_factor output pixels
+        :param upscale: the pixel scaling factor, each input pixel maps to scale_factor output pixels
         :param resize: dimensions to resize to or a single value to set the long edge to and keep the input aspect ratio
         :param horizontal: use horizontal lines to render the image
         """
@@ -94,7 +94,7 @@ class SpeckPlot:
                 factor = resize / max(image.size)
                 resize = round(image.size[0] * factor), round(image.size[1] * factor)
             image = image.resize(resize)
-        return cls(image, scale, horizontal)
+        return cls(image, upscale, horizontal)
 
     def __repr__(self):
         d = [f'{k}={v}' for k, v in self.__dict__.items() if not k.startswith('_')]
