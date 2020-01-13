@@ -23,11 +23,11 @@ class SpeckPlot:
     inter = 10  # x-axis points generated between each input image pixel
     dpi = 100  # figure dpi used for plotting and saving
 
-    def __init__(self, image: Image, upscale: float = 5.0, horizontal: bool = True):
+    def __init__(self, image: Image, upscale: float = 10.0, horizontal: bool = True):
         """
         Create a SpeckPlot from a PIL Image
         :param image: PIL image
-        :param upscale: the pixel scaling factor, each input pixel maps to scale_factor output pixels
+        :param upscale: the pixel scaling factor, each input pixel maps to upscale output pixels
         :param horizontal: use horizontal lines to render the image
         """
 
@@ -49,14 +49,14 @@ class SpeckPlot:
     def from_path(
         cls,
         path: str,
-        upscale: float = 3.0,
+        upscale: float = 10.0,
         resize: Union[Optional[Tuple[int, int]], int] = None,
         horizontal: bool = True,
     ):
         """
         Create a SpeckPlot from an image path
         :param path: path to image file
-        :param upscale: the pixel scaling factor, each input pixel maps to scale_factor output pixels
+        :param upscale: the pixel scaling factor, each input pixel maps to upscale output pixels
         :param resize: dimensions to resize to or a single value to set the long edge to and keep the input aspect ratio
         :param horizontal: use horizontal lines to render the image
         """
@@ -73,14 +73,14 @@ class SpeckPlot:
     def from_url(
         cls,
         url: str,
-        upscale: float = 3.0,
+        upscale: float = 10.0,
         resize: Union[Optional[Tuple[int, int]], int] = None,
         horizontal: bool = True,
     ):
         """
         Create SpeckPlot from image URL
         :param url: url string
-        :param upscale: the pixel scaling factor, each input pixel maps to scale_factor output pixels
+        :param upscale: the pixel scaling factor, each input pixel maps to upscale output pixels
         :param resize: dimensions to resize to or a single value to set the long edge to and keep the input aspect ratio
         :param horizontal: use horizontal lines to render the image
         """
@@ -119,14 +119,12 @@ class SpeckPlot:
             self._x.cache_clear()
             self._y.cache_clear()
             self._noise.cache_clear()
-            self._colour.cache_clear()
 
     def cache_info(self) -> dict:
         return {
             'x': self._x.cache_info(),
             'y': self._y.cache_info(),
             'noise': self._noise.cache_info(),
-            'colour': self._colour.cache_info(),
         }
 
     @lru_cache()
@@ -189,7 +187,6 @@ class SpeckPlot:
         else:
             return [(0, 0) for _ in range(self.h)]
 
-    @lru_cache()
     def _colour(self, colour: Union[str, Iterable, Colour]) -> ColourData:
         if isinstance(colour, str):
             return [colour]
@@ -217,7 +214,7 @@ class SpeckPlot:
                 eg. weights = (0.2, 0.9) =
                     0.2 units of line weight mapped from <= min darkness offset
                     0.9 units of line weight mapped from >= max darkness offset
-        :param weight_clipping: proportion of greys that map to min and max thicknesses.
+        :param weight_clipping: proportion of greys that map to min and max weights.
                 eg. weight_clipping = (0.1, 0.8) =
                     <=10% grey maps to min weight
                     >=80% grey maps to max weight

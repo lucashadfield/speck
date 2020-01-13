@@ -56,12 +56,12 @@ class LineUnionModifier(Modifier):
         y_ = []
         for t in self.thicknesses:
             y_top = (
-                self.aggregation([y[pos + i][0] - pos + i - 0.5 for i in range(t)])
+                self.aggregation([y[pos + i][0] - pos - i - 0.5 for i in range(t)])
                 + pos
                 + t / 2
             )
             y_bot = (
-                self.aggregation([y[pos + i][1] - pos + i - 0.5 for i in range(t)])
+                self.aggregation([y[pos + i][1] - pos - i - 0.5 for i in range(t)])
                 + pos
                 + t / 2
             )

@@ -52,7 +52,7 @@ class CmapColour(Colour):
     def __init__(self, cmap: Union[str, mpl.colors.Colormap]):
         """
         Create CmapColour object to be passed to SpeckPlot.draw method.
-        Colour each line according to pre-defined matplotlib cmap.
+        Colours each line according to pre-defined matplotlib cmap.
         :param cmap: matplotlib cmap object or name to generate line colours according to
         """
 
