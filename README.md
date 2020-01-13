@@ -20,7 +20,8 @@ pip install git+https://github.com/lucashadfield/speck.git
 
 ### Examples
 
-*Note: large images can take a long time to process and might raise a MemoryError. The `resize` argument to `SpeckPlot` will scale down the image before processing. It supports both passing a `tuple` of dimensions and a single dimension `int` that the long edge will be scaled and that maintains the original aspect ratio.*
+*Note: Large images can take a long time to process and might raise a MemoryError. This is because the image is scaled up substantially. The `resize` argument to `SpeckPlot` will scale down the image before processing. It supports both passing a `tuple` of dimensions and a single dimension `int` that the long edge will be scaled and that maintains the original aspect ratio. I suggest starting with `resize=100`.  
+For example, an image resized to (100, 100) with `upscale=10` (default) will be 1000x1000 pixels when saved.*
 
 
 **Basic Example:**
@@ -81,7 +82,7 @@ s.save('5.png')
 s.draw(weights=(0.2, 0.8), colour=GreyscaleMeanColour(s))
 s.save('6.png')
 
-# 7. Noise increaing along length of line
+# 7. Noise increasing along length of line
 s.draw(
     weights=(0.1, 0.4),
     noise=SineNoise(scale=list(np.linspace(0.5, 1.5, s.w * s.inter))),
@@ -109,7 +110,7 @@ s.save('9.png')
 ```python
 # ipywidget that runs in jupyter notebook
 from speck import SpeckPlot, SpeckWidget
-s = SpeckPlot.from_path('...', resize=(100, 100), upscale=10)
+s = SpeckPlot.from_path('...', resize=(60, 56), upscale=5)
 SpeckWidget(s).interact()
 ```
 ![ipywdiget](https://i.imgur.com/RoNdR3l.png)
@@ -163,6 +164,6 @@ Each noise profile can be created with `profile='parallel'`, `profile='reflect'`
 - Create your own by inheriting from Modifier
 
 **Other SpeckPlot methods:**
-- .set_inter(inter=10): sets the number of interpolated points that are generated between adjacent pixels. The higher the inter value, the smoother the curves but the longer the processing and plotting time. Set to 10 by default.
-- .set_k(k=10): sets the logistic growth rate on pixel boundaries. Higher k will result in steeper boundaries. Set to 10 by default. (see https://en.wikipedia.org/wiki/Logistic_function)
-- .clear_cache(): clears the lru_cache of x, y and noise data.
+- `.set_inter(inter=10)`: sets the number of interpolated points that are generated between adjacent pixels. The higher the inter value, the smoother the curves but the longer the processing and plotting time. Set to 10 by default.
+- `.set_k(k=10)`: sets the logistic growth rate on pixel boundaries. Higher k will result in steeper boundaries. Set to 10 by default. (see https://en.wikipedia.org/wiki/Logistic_function)
+- `.clear_cache()`: clears the lru_cache of x, y and noise data.
