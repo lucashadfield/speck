@@ -89,7 +89,6 @@ s.draw(
 )
 s.save('7.png')
 
-
 # 8 .Vertical lines
 s = SpeckPlot.from_url('https://i.imgur.com/JLhMo6E.jpg', upscale=8, horizontal=False)
 s.draw(weights=(0.1, 0.8), noise=SineNoise(scale=0.7), colour='#434343')
@@ -108,13 +107,14 @@ s.save('9.png')
 
 ### Interactive Widget
 ```python
+# ipywidget that runs in jupyter notebook
 from speck import SpeckPlot, SpeckWidget
 s = SpeckPlot.from_path('...', resize=(100, 100), upscale=10)
 SpeckWidget(s).interact()
 ```
+![ipywdiget](https://i.imgur.com/RoNdR3l.png)
 
-
-### Configuration Parameters:
+### Configuration Parameters
 **Constructor options:**
 Can be passed to the constructors: `SpeckPlot`, `SpeckPlot.from_path` and `SpeckPlot.from_url`
 - `upscale`: the pixel scaling factor, each input pixel maps to upscale output pixels (default: 10)
@@ -138,7 +138,7 @@ Output is configured based on the arguments passed to the `draw` method of `Spec
             <=10% grey maps to min weight
             >=80% grey maps to max weight
 - `noise`: Noise object that is called and added onto thickness values (see below)
-- `colour`: Colour object that is called and applied to lines (see below)
+- `colour`: colour or list of colours or Colour object that is called and applied to lines (see below)
 - `skip`: number of lines of pixels to skip for each plotted line
 - `background`: background colour of output plot
 - `modifiers`: list of Modifier objects that are iteratively applied to the output x, y, noise and colour data (see below)
@@ -152,7 +152,8 @@ Output is configured based on the arguments passed to the `draw` method of `Spec
 - `GreyscaleMeanColour`: Takes the mean greyscale colour of each row of pixels and makes the line that colour.
 - Create your own by inheriting from Colour.
 
-**Noise Profile options:**
+**Noise Profile options:**  
+Each noise profile can be created with `profile='parallel'`, `profile='reflect'` or `profile='independent'` which either applies the same noise on either edge of each line, the opposite noise on each edge of each line or independent random noise on each edge of each line, respectively.
 - `SineNoise`: Random smooth noise based on the product of multiple random sine waves.
 - `RandomNoise`: Random static noise with some averaging. (slow)
 - Create your own by inheriting from Noise.
@@ -163,5 +164,5 @@ Output is configured based on the arguments passed to the `draw` method of `Spec
 
 **Other SpeckPlot methods:**
 - .set_inter(inter=10): sets the number of interpolated points that are generated between adjacent pixels. The higher the inter value, the smoother the curves but the longer the processing and plotting time. Set to 10 by default.
-- .set_k(k=10): sets the logistic growth rate on pixel boundaries. Higher k will result in steeper boundaries. Set to 10 by default.
+- .set_k(k=10): sets the logistic growth rate on pixel boundaries. Higher k will result in steeper boundaries. Set to 10 by default. (see https://en.wikipedia.org/wiki/Logistic_function)
 - .clear_cache(): clears the lru_cache of x, y and noise data.

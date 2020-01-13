@@ -80,7 +80,7 @@ class SpeckWidget:
             seed=1,
         )
 
-    def interact(self, plot_kwargs):
+    def interact(self):
 
         return ipywidgets.interact(
             self._widget_func,

@@ -228,7 +228,7 @@ class SpeckPlot:
                     <=10% grey maps to min weight
                     >=80% grey maps to max weight
         :param noise: Noise object that is called and added onto thickness values
-        :param colour: Colour object that is called and applied to lines
+        :param colour: colour or list of colours or Colour object that is called and applied to lines
         :param skip: number of lines of pixels to skip for each plotted line
         :param background: background colour of output plot
         :param modifiers: list of Modifier objects that are iteratively applied to the output x, y, noise and colour data
