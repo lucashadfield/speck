@@ -166,4 +166,15 @@ Each noise profile can be created with `profile='parallel'`, `profile='reflect'`
 **Other SpeckPlot methods:**
 - `.set_inter(inter=10)`: sets the number of interpolated points that are generated between adjacent pixels. The higher the inter value, the smoother the curves but the longer the processing and plotting time. Set to 10 by default.
 - `.set_k(k=10)`: sets the logistic growth rate on pixel boundaries. Higher k will result in steeper boundaries. Set to 10 by default. (see https://en.wikipedia.org/wiki/Logistic_function)
-- `.clear_cache()`: clears the lru_cache of x, y and noise data.
+- `.cache_clear()`: clears the lru_cache of x, y and noise data.
+
+### Tests
+Run all tests. Tests generate output images and compare them to tests/baselines. From `speck` directory, run:
+
+```python -m pytest tests --mpl```
+
+To generate new baseline images:
+
+```python -m pytest tests --mpl-generate-path=baseline_temp```
+
+All tests will be skipped. This will generate test images into a newly created `baseline_temp` directory. Copy images from there to `baseline` to add them to the test suite.

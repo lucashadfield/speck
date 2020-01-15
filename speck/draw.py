@@ -111,6 +111,11 @@ class SpeckPlot:
         self.ax.set_facecolor(background)
         if self.horizontal:
             self.ax.invert_yaxis()
+            self.ax.set_ylim(self.h, 0)
+            self.ax.set_xlim(0, self.w)
+        else:
+            self.ax.set_ylim(0, self.w)
+            self.ax.set_xlim(0, self.h)
         self.ax.spines['left'].set_visible(False)
         self.ax.spines['right'].set_visible(False)
         self.ax.spines['top'].set_visible(False)

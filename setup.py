@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='speck',
-    version='0.3.4',
+    version='0.3.5',
     author='Lucas Hadfield',
     packages=find_packages(),
     install_requires=[
