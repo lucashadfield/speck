@@ -21,7 +21,7 @@ logger = logging.getLogger('speck')
 class SpeckPlot:
     dpi = 100  # figure dpi used for plotting and saving
 
-    def __init__(self, image: Image, upscale: float = 10.0, horizontal: bool = True):
+    def __init__(self, image: Image, upscale: int = 10, horizontal: bool = True):
         """
         Create a SpeckPlot from a PIL Image
         :param image: PIL image
@@ -44,7 +44,9 @@ class SpeckPlot:
         plt.close(self.fig)
 
         self.k = 10  # logistic growth rate on pixel boundaries
-        self.inter = 10  # x-axis points generated between each input image pixel
+        self.inter = (
+            upscale if upscale >= 10 else 10
+        )  # x-axis points generated between each input image pixel
 
         if max(self.im.shape) > 1000:
             logger.warning(
@@ -138,10 +140,6 @@ class SpeckPlot:
             'noise': self._noise.cache_info(),
         }
 
-    def set_inter(self, inter):
-        self.inter = inter
-        self.cache_clear()
-
     def set_k(self, k):
         self.k = k
         self.cache_clear()
@@ -163,12 +161,19 @@ class SpeckPlot:
         clip_max = (1 - weight_clipping[0]) * 255.0
 
         def repeat_head_tail(arr: np.ndarray, n: int) -> np.ndarray:
-            return np.insert(
-                np.insert(arr, 0, np.ones(n) * arr[0]), -1, np.ones(n) * arr[-1]
+            repeated = np.insert(
+                np.insert(arr, 0, np.ones(n // 2) * arr[0]),
+                -1,
+                np.ones(n // 2) * arr[-1],
             )
 
-        y = []
+            if n % 2:
+                # odd, so append the last point again
+                repeated = np.append(repeated, repeated[-1])
 
+            return repeated
+
+        y = []
         for i, line in enumerate(self.im):
             if i % (skip + 1):
                 continue
@@ -186,9 +191,9 @@ class SpeckPlot:
 
             x0 = np.repeat(np.arange(1, self.w), self.inter)
 
-            y_offset = repeat_head_tail(y_offset, self.inter // 2)
-            L = repeat_head_tail(L, self.inter // 2)
-            x0 = repeat_head_tail(x0, self.inter // 2)
+            y_offset = repeat_head_tail(y_offset, self.inter)
+            L = repeat_head_tail(L, self.inter)
+            x0 = repeat_head_tail(x0, self.inter)
 
             y_top: np.ndarray = i + (
                 L / (1 + np.exp(-self.k * (self._x() - x0)))
