@@ -44,9 +44,7 @@ class SpeckPlot:
         plt.close(self.fig)
 
         self.k = 10  # logistic growth rate on pixel boundaries
-        self.inter = (
-            upscale if upscale >= 10 else 10
-        )  # x-axis points generated between each input image pixel
+        self.inter = int(upscale) if upscale >= 10 else 10
 
         if max(self.im.shape) > 1000:
             logger.warning(
@@ -57,7 +55,7 @@ class SpeckPlot:
     def from_path(
         cls,
         path: str,
-        upscale: float = 10.0,
+        upscale: int = 10,
         resize: Union[Optional[Tuple[int, int]], int] = None,
         horizontal: bool = True,
     ):
@@ -81,7 +79,7 @@ class SpeckPlot:
     def from_url(
         cls,
         url: str,
-        upscale: float = 10.0,
+        upscale: int = 10,
         resize: Union[Optional[Tuple[int, int]], int] = None,
         horizontal: bool = True,
     ):

@@ -168,7 +168,7 @@ Each noise profile can be created with `profile='parallel'`, `profile='reflect'`
 - `.cache_clear()`: clears the lru_cache of x, y and noise data.
 
 ### Tests
-Run all tests. Tests generate output images and compare them to tests/baselines. From `speck` directory, run:
+Run all tests. Tests generate output images and compare them to `tests/baselines/*`. From `speck` directory, run:
 
 ```python -m pytest tests --mpl```
 
@@ -176,4 +176,4 @@ To generate new baseline images:
 
 ```python -m pytest tests --mpl-generate-path=baseline_temp```
 
-All tests will be skipped. This will generate test images into a newly created `baseline_temp` directory. Copy images from there to `baseline` to add them to the test suite.
+All tests will be skipped. This will instead generate test images into a newly created `baseline_temp` directory. Copy images from there to `baseline` to add them to the test suite.
