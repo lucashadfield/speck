@@ -44,10 +44,13 @@ s.save(path='...')
 
 **Other Examples:**
 ```python
-s = SpeckPlot.from_url('https://i.imgur.com/JLhMo6E.jpg', upscale=8)
+import speck
+import numpy as np
+
+s = speck.SpeckPlot.from_url('https://i.imgur.com/JLhMo6E.jpg', upscale=8)
 
 # 1. Inverted weights and single line colour
-s.draw(weights=(0.8, 0.1), noise=SineNoise(scale=0.7), colour='#434343')
+s.draw(weights=(0.8, 0.1), noise=speck.SineNoise(scale=0.7), colour='#434343')
 s.save('1.png')
 
 # 2. No noise and alternating line colours
@@ -55,23 +58,23 @@ s.draw(weights=(0.4, 0.6), noise=None, colour=['#3b4252', '#d08770'])
 s.save('2.png')
 
 # 3. Extreme noise
-s.draw(weights=(0.2, 0.8), noise=SineNoise(scale=1.2), colour='#88c0d0')
+s.draw(weights=(0.2, 0.8), noise=speck.SineNoise(scale=1.2), colour='#88c0d0')
 s.save('3.png')
 
 # 4. Equal noise on each line and custom colour gradient
 s.draw(
     weights=(0.2, 0.8),
-    noise=SineNoise(
+    noise=speck.SineNoise(
         scale=1.2, wave_count=1, freq_factor=(1, 1), phase_offset_range=(0, 0)
     ),
-    colour=GradientColour(['red', 'blue', 'black']),
+    colour=speck.GradientColour(['red', 'blue', 'black']),
 )
 s.save('4.png')
 
 # 5. Skip every second line, and set background colour
 s.draw(
     weights=(0.2, 0.8),
-    noise=SineNoise(scale=0.5),
+    noise=speck.SineNoise(scale=0.5),
     skip=1,
     background='#ebcb8b',
     colour='white',
@@ -79,28 +82,29 @@ s.draw(
 s.save('5.png')
 
 # 6. Colour each line based on its average greyscale value
-s.draw(weights=(0.2, 0.8), colour=GreyscaleMeanColour(s))
+s.draw(weights=(0.2, 0.8), colour=speck.GreyscaleMeanColour(s))
 s.save('6.png')
 
 # 7. Noise increasing along length of line
 s.draw(
     weights=(0.1, 0.4),
-    noise=SineNoise(scale=list(np.linspace(0.5, 1.5, s.w * s.inter))),
+    noise=speck.SineNoise(scale=list(np.linspace(0.5, 1.5, s.w * s.inter))),
     colour='#bf616a',
 )
 s.save('7.png')
 
 # 8 .Vertical lines
-s = SpeckPlot.from_url('https://i.imgur.com/JLhMo6E.jpg', upscale=8, horizontal=False)
-s.draw(weights=(0.1, 0.8), noise=SineNoise(scale=0.7), colour='#434343')
+s = speck.SpeckPlot.from_url('https://i.imgur.com/JLhMo6E.jpg', upscale=8, horizontal=False)
+s.draw(weights=(0.1, 0.8), noise=speck.SineNoise(scale=0.7), colour='#434343')
 s.save('8.png')
 
 # 9. first 10 lines are 1 unit thick, next 10 are 2 units thick, last 10 are 3 units thick
+s = speck.SpeckPlot.from_url('https://i.imgur.com/JLhMo6E.jpg', upscale=8)
 thicknesses = [1] * 10 + [2] * 10 + [3] * 10
 s.draw(
     weights=(0.3, 1),
-    modifiers=[LineUnionModifier(thicknesses)],
-    colour=CmapColour('GnBu'),
+    modifiers=[speck.LineUnionModifier(thicknesses)],
+    colour=speck.CmapColour('GnBu'),
 )
 s.save('9.png')
 ```
