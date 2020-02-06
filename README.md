@@ -4,13 +4,17 @@
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](#)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-
 Render images as a set of continuous lines representing each horizontal (or vertical) line of pixels:
 - Line weights vary with greyscale pixel darkness.
 - Set line weight range and clipping.
 - Add noise profiles to introduce randomness.
 - Add colour profiles to vary line colours.
 - Use ipywidget to tweak outputs interactively
+
+### Try it out
+[<img src="https://colab.research.google.com/assets/colab-badge.svg" align="center">](https://colab.research.google.com/github/lucashadfield/speck/blob/master/speck_colab.ipynb)
+
+*Note: This colab notebook contains the basic configuration options. For more advanced outputs, see "Other Examples" below.*
 
 ### Install
 ```
