@@ -1,6 +1,6 @@
 __all__ = ['XData', 'YData', 'NoiseData', 'ColourData']
 
-from typing import Union, Iterable, Optional, List, Tuple
+from typing import Union, Iterable, List, Tuple
 
 import numpy as np
 

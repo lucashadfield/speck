@@ -1,6 +1,6 @@
 __all__ = ['GradientColour', 'CmapColour', 'KMeansColour', 'GreyscaleMeanColour']
 
-from typing import Union, Iterable, Tuple
+from typing import Union, Iterable, Tuple, List
 from abc import ABC, abstractmethod
 
 import cv2
@@ -30,12 +30,12 @@ class Colour(ABC):
         return hash(self) == hash(other)
 
     @abstractmethod
-    def __call__(self, m: int) -> Iterable[Tuple]:
+    def __call__(self, m: int) -> Iterable[Tuple[float, ...]]:
         pass
 
 
 class GradientColour(Colour):
-    def __init__(self, colour_list: Tuple):
+    def __init__(self, colour_list: Union[List, Tuple]):
         """
         Create GradientColour object to be passed to SpeckPlot.draw method.
         Colours each line according to a generated colour between the provided checkpoint colours.
@@ -47,7 +47,7 @@ class GradientColour(Colour):
         self.colour_list = colour_list
         self._cmap = mpl.colors.LinearSegmentedColormap.from_list("", colour_list)
 
-    def __call__(self, m: int) -> Iterable[Tuple]:
+    def __call__(self, m: int) -> Iterable[Tuple[float, ...]]:
         return [self._cmap(x) for x in np.linspace(0, 1, m, endpoint=False)]
 
 
@@ -61,7 +61,7 @@ class CmapColour(Colour):
 
         self.cmap = mpl.cm.get_cmap(cmap) if isinstance(cmap, str) else cmap
 
-    def __call__(self, m: int) -> Iterable[Tuple]:
+    def __call__(self, m: int) -> Iterable[Tuple[float, ...]]:
         return [self.cmap(x) for x in np.linspace(0, 1, m, endpoint=False)]
 
 
@@ -78,11 +78,12 @@ class KMeansColour(Colour):
         :param k: number of groups for k-means
         """
 
-        if speck_plot.image.mode != 'RGB':
+        if speck_plot.image.mode not in ('RGB', 'RGBA'):
             raise AssertionError('KMeansColour requires RGB image mode')
+        else:
+            self.im = np.array(speck_plot.image.convert('RGB'))
 
         self.k = k
-        self.im = np.array(speck_plot.image)
 
     def _kmeans_colour(self, row: np.ndarray) -> Tuple:
         _, labels, palette = cv2.kmeans(
@@ -92,9 +93,14 @@ class KMeansColour(Colour):
 
         return palette[np.argmax(counts)] / 255
 
-    def __call__(self, m: int) -> Iterable[Tuple]:
-        return np.squeeze(
-            np.apply_along_axis(self._kmeans_colour, 1, np.float32(self.im))
+    def __call__(self, m: int) -> Iterable[Tuple[float, ...]]:
+        return list(
+            map(
+                tuple,
+                np.squeeze(
+                    np.apply_along_axis(self._kmeans_colour, 1, np.float32(self.im))
+                ),
+            )
         )
 
 
@@ -108,5 +114,5 @@ class GreyscaleMeanColour(Colour):
 
         self.im = speck_plot.im
 
-    def __call__(self, m: int) -> Iterable[Tuple]:
+    def __call__(self, m: int) -> Iterable[Tuple[float, ...]]:
         return [(c, c, c) for c in np.array(self.im).mean(1) / 255.0]

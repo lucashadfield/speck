@@ -1,6 +1,6 @@
 __all__ = ['LineUnionModifier']
 
-from typing import List, Iterable, Tuple, Union, Callable
+from typing import Iterable, Tuple, Union, Callable
 from functools import partial
 from abc import ABC, abstractmethod
 
@@ -51,7 +51,11 @@ class LineUnionModifier(Modifier):
 
         self.aggregation = aggregation
 
-    def __call__(self, x, y, n, c):
+    def __call__(
+        self, x: XData, y: YData, n: NoiseData, c: ColourData,
+    ) -> Tuple[
+        XData, YData, NoiseData, ColourData,
+    ]:
         if sum(self.thicknesses) != len(y):
             raise AssertionError('sum(thicknesses) != number of lines')
 

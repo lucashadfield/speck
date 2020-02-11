@@ -1,5 +1,7 @@
 __all__ = ['SpeckWidget']
 
+from typing import Tuple, Union, Iterable
+
 import ipywidgets
 
 from speck.noise import SineNoise
@@ -47,16 +49,16 @@ class SpeckWidget:
 
     def _widget_func(
         self,
-        weights,
-        weight_clipping,
-        noise_profile,
-        noise_scale,
-        noise_wave_count,
-        noise_base_freq,
-        noise_freq_factor,
-        noise_phase_offset_range,
-        colour_top,
-        colour_bot,
+        weights: Tuple[float, float],
+        weight_clipping: Tuple[float, float],
+        noise_profile: str,
+        noise_scale: Union[float, Iterable[float]],
+        noise_wave_count: int,
+        noise_base_freq: float,
+        noise_freq_factor: Tuple[float, float],
+        noise_phase_offset_range: Tuple[float, float],
+        colour_top: Union[str, Tuple[float, ...]],
+        colour_bot: Union[str, Tuple[float, ...]],
     ):
         noise = SineNoise(
             profile=noise_profile,

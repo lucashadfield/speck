@@ -1,6 +1,6 @@
 __all__ = ['SpeckPlot']
 
-from typing import Union, Iterable, Optional, Tuple
+from typing import Union, Iterable, Optional, Tuple, Dict
 from itertools import cycle
 from functools import lru_cache
 import logging
@@ -14,7 +14,7 @@ from PIL import Image
 from speck.noise import Noise
 from speck.colour import Colour
 from speck.modifier import Modifier
-from speck.types import *
+from speck.types import XData, YData, NoiseData, ColourData
 
 logger = logging.getLogger('speck')
 
@@ -57,7 +57,7 @@ class SpeckPlot:
         cls,
         path: str,
         upscale: int = 10,
-        resize: Union[Optional[Tuple[int, int]], int] = None,
+        resize: Optional[Union[int, Tuple[int, int]]] = None,
         horizontal: bool = True,
     ):
         """
@@ -69,19 +69,14 @@ class SpeckPlot:
         """
 
         image = Image.open(path)
-        if resize is not None:
-            if isinstance(resize, (int, float)):
-                factor = resize / max(image.size)
-                resize = round(image.size[0] * factor), round(image.size[1] * factor)
-            image = image.resize(resize)
-        return cls(image, upscale, horizontal)
+        return cls(cls._resize_image(image, resize), upscale, horizontal)
 
     @classmethod
     def from_url(
         cls,
         url: str,
         upscale: int = 10,
-        resize: Union[Optional[Tuple[int, int]], int] = None,
+        resize: Optional[Union[int, Tuple[int, int]]] = None,
         horizontal: bool = True,
     ):
         """
@@ -96,18 +91,24 @@ class SpeckPlot:
         from io import BytesIO
 
         image = Image.open(BytesIO(requests.get(url).content))
+        return cls(cls._resize_image(image, resize), upscale, horizontal)
+
+    @staticmethod
+    def _resize_image(
+        image: Image, resize: Optional[Union[int, Tuple[int, int]]]
+    ) -> Image:
         if resize is not None:
-            if isinstance(resize, (int, float)):
+            if isinstance(resize, int):
                 factor = resize / max(image.size)
                 resize = round(image.size[0] * factor), round(image.size[1] * factor)
             image = image.resize(resize)
-        return cls(image, upscale, horizontal)
+        return image
 
     def __repr__(self):
         d = [f'{k}={v}' for k, v in self.__dict__.items() if not k.startswith('_')]
         return f'{self.__class__.__name__}({", ".join(d)})'
 
-    def _clear_ax(self, background: Union[str, Tuple]) -> None:
+    def _clear_ax(self, background: Union[str, Tuple[float, ...]]) -> None:
         self.ax.clear()
         self.ax.set_facecolor(background)
         if self.horizontal:
@@ -132,14 +133,14 @@ class SpeckPlot:
             self._y.cache_clear()
             self._noise.cache_clear()
 
-    def cache_info(self) -> dict:
+    def cache_info(self) -> Dict[str, Tuple[int, ...]]:
         return {
             'x': self._x.cache_info(),
             'y': self._y.cache_info(),
             'noise': self._noise.cache_info(),
         }
 
-    def set_k(self, k):
+    def set_k(self, k: int) -> None:
         self.k = k
         self.cache_clear()
 
@@ -225,7 +226,7 @@ class SpeckPlot:
         noise: Optional[Noise] = None,
         colour: Union[str, Iterable, Colour] = 'black',
         skip: int = 0,
-        background: Union[str, Tuple] = 'white',
+        background: Union[str, Tuple[float, ...]] = 'white',
         modifiers: Optional[Iterable[Modifier]] = None,
         seed: Optional[int] = None,
         ax: Optional[Axis] = None,

@@ -1,6 +1,6 @@
 __all__ = ['RandomNoise', 'SineNoise']
 
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Iterable
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -28,14 +28,14 @@ class Noise(ABC):
         h = []
         for k, v in self.__dict__.items():
             if not k.startswith('_'):
-                h.append(tuple(v) if isinstance(v, list) else v)
+                h.append(tuple(v) if isinstance(v, (list, np.ndarray)) else v)
 
         return hash(tuple(h))
 
     def __eq__(self, other):
         return hash(self) == hash(other)
 
-    def __call__(self, m: int, n: int) -> List[Tuple]:
+    def __call__(self, m: int, n: int) -> List[Tuple[np.ndarray, np.ndarray]]:
         # m = number of rows (lines)
         # n = number of points per line
 
@@ -98,7 +98,7 @@ class SineNoise(Noise):
     def __init__(
         self,
         profile: str = 'parallel',
-        scale: Union[float, tuple] = 0.5,
+        scale: Union[float, Iterable[float]] = 0.5,
         wave_count: int = 3,
         base_freq: float = 3.0,
         freq_factor: Tuple[float, float] = (1.0, 3.0),
@@ -112,7 +112,7 @@ class SineNoise(Noise):
                 'independent': apply independently generated noise profiles to the top and bottom edge of each line
         :param scale: magnitude of the noise generated.
                 Either constant noise as a float or a tuple of length SpeckPlot.w * SpeckPlot * h, eg:
-                scale = tuple(np.linspace(0.5, 1.5, speck_plot.w * speck_plot.inter))
+                scale = np.linspace(0.5, 1.5, speck_plot.w * speck_plot.inter)
         :param wave_count: number of sine waves that are combined to create the noise profile
         :param base_freq: base number of wavelengths that fit in the width of the image
         :param freq_factor: range of random multipliers that are applied to the base frequency for each wave
