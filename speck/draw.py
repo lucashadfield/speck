@@ -1,14 +1,15 @@
 __all__ = ['SpeckPlot']
 
+from typing import Union, Iterable, Optional, Tuple
+from itertools import cycle
+from functools import lru_cache
+import logging
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import figure
 from matplotlib.axis import Axis
 from PIL import Image
-from itertools import cycle
-from typing import Union, Iterable, Optional, Tuple
-import logging
-from functools import lru_cache
 
 from speck.noise import Noise
 from speck.colour import Colour

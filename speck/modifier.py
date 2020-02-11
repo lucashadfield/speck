@@ -1,19 +1,22 @@
 __all__ = ['LineUnionModifier']
 
-import numpy as np
 from typing import List, Iterable, Tuple, Union, Callable
 from functools import partial
+from abc import ABC, abstractmethod
+
+import numpy as np
 
 from speck.types import XData, YData, NoiseData, ColourData
 
 
-class Modifier:
+class Modifier(ABC):
+    @abstractmethod
     def __call__(
         self, x: XData, y: YData, n: NoiseData, c: ColourData,
     ) -> Tuple[
         XData, YData, NoiseData, ColourData,
     ]:
-        raise NotImplementedError
+        pass
 
 
 class LineUnionModifier(Modifier):

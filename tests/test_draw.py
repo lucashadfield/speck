@@ -1,9 +1,10 @@
-import pytest
 import os
 
+import pytest
+
 from speck.draw import SpeckPlot
-from speck.noise import SineNoise, RandomNoise
-from speck.colour import GradientColour, CmapColour, KMeansColour, GreyscaleMeanColour
+from speck.noise import SineNoise
+from speck.colour import GradientColour, CmapColour
 
 try:
     import argument_randomiser as ar

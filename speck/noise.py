@@ -1,10 +1,12 @@
 __all__ = ['RandomNoise', 'SineNoise']
 
-import numpy as np
 from typing import List, Tuple, Union
+from abc import ABC, abstractmethod
+
+import numpy as np
 
 
-class Noise:
+class Noise(ABC):
     def __init__(self, profile: str, *args, **kwargs):
         if profile not in ['parallel', 'reflect', 'independent']:
             raise ValueError(
@@ -51,8 +53,9 @@ class Noise:
                 noise_b.append(self._generate(n))
             return [(a, b) for a, b in zip(noise_a, noise_b)]
 
+    @abstractmethod
     def _generate(self, n: int) -> np.ndarray:
-        raise NotImplementedError
+        pass
 
 
 class RandomNoise(Noise):

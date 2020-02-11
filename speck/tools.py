@@ -1,6 +1,7 @@
 __all__ = ['SpeckWidget']
 
 import ipywidgets
+
 from speck.noise import SineNoise
 from speck.colour import GradientColour
 

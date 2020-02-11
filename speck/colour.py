@@ -1,12 +1,14 @@
 __all__ = ['GradientColour', 'CmapColour', 'KMeansColour', 'GreyscaleMeanColour']
 
+from typing import Union, Iterable, Tuple
+from abc import ABC, abstractmethod
+
+import cv2
 import numpy as np
 import matplotlib as mpl
-from typing import Union, Iterable, List, Tuple
-import cv2
 
 
-class Colour:
+class Colour(ABC):
     def __repr__(self):
         """
         Auto __repr__ based on instance __dict__
@@ -27,8 +29,9 @@ class Colour:
     def __eq__(self, other):
         return hash(self) == hash(other)
 
+    @abstractmethod
     def __call__(self, m: int) -> Iterable[Tuple]:
-        raise NotImplementedError
+        pass
 
 
 class GradientColour(Colour):

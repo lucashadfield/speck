@@ -1,7 +1,8 @@
 __all__ = ['XData', 'YData', 'NoiseData', 'ColourData']
 
-import numpy as np
 from typing import Union, Iterable, Optional, List, Tuple
+
+import numpy as np
 
 XData = np.ndarray
 YData = List[Tuple[np.ndarray, np.ndarray]]
