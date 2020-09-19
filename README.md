@@ -3,7 +3,6 @@
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](#)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![](http://hits.dwyl.com/lucashadfield/speck.svg)](http://hits.dwyl.com/lucashadfield/speck)
 
 Render images as a set of continuous lines representing each horizontal (or vertical) line of pixels:
 - Line weights vary with greyscale pixel darkness.
